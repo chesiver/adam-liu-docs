@@ -55,27 +55,33 @@ const CenteredTree = ({ data }) => {
 
 
 export default function D3Tree() {
-  const [text, setText] = useState(
-  `
-const fv = function() {
-    const a = 5;
-};
-  `);
+  const initText =   
+`
+  const fv = function() {
+      const a = 5;
+  };
+`;
+  const [parseTree, setParseTree] = useState(GetParserTree(initText));
   const textChanged = (text) => {
-    setText(text);
+    try {
+      const parseTree = GetParserTree(text);
+      setParseTree(parseTree);
+    } catch (err) {
+      // ignore
+    }
   }
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
     <div>
       <div style={{borderStyle: 'solid', borderWidth: '3px'}}>
       <CodeMirror
-        value={text}
+        value={initText}
         height="200px"
         extensions={[javascript({ jsx: true })]}
         onChange={textChanged}
       />
       </div>
-      <CenteredTree data={GetParserTree(text)} />
+      <CenteredTree data={parseTree} />
     </div>
   );
 }
