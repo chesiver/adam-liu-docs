@@ -26,11 +26,27 @@ const CenteredTree = ({ data }) => {
     }
   });
 
+  const renderRectSvgNode = ({ nodeDatum, toggleNode }) => (
+    <g>
+      <rect width="20" height="20" x="-10" onClick={toggleNode} />
+      <text fill="black" strokeWidth="1" x="20">
+        {nodeDatum.name}
+      </text>
+      {nodeDatum.attributes?.text && (
+        <text fill="black" x="20" dy="20" strokeWidth="1">
+          {nodeDatum.attributes?.text}
+        </text>
+      )}
+    </g>
+  );
+
   return (
-    <div ref={treeContainerRef} style={{ width: '60em', height: '30em', borderStyle: 'solid', borderWidth: '2px'}}>
+    <div ref={treeContainerRef} style={{ width: '60em', height: '40em', borderStyle: 'solid', borderWidth: '3px'}}>
       <Tree
         data={data}
         translate={treeTranslate}
+        nodeSize={{x: 250, y: 200}}
+        renderCustomNodeElement={renderRectSvgNode}
       />
     </div>
   )
@@ -51,12 +67,14 @@ const fv = function() {
   return (
     // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
     <div>
+      <div style={{borderStyle: 'solid', borderWidth: '3px'}}>
       <CodeMirror
         value={text}
         height="200px"
         extensions={[javascript({ jsx: true })]}
         onChange={textChanged}
       />
+      </div>
       <CenteredTree data={GetParserTree(text)} />
     </div>
   );
