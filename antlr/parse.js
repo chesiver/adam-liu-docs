@@ -9,7 +9,7 @@ class Visitor extends JavaScriptParserVisitor {
         if (!ctx) {
             return;
         }
-        const name = ctx.constructor.name.split("Context")[0];
+        const name = ctx.parser.ruleNames[ctx.ruleIndex];
         const text = ctx.getText();
         const node = {
             name,
