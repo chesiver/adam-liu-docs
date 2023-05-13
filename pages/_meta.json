@@ -1,7 +1,7 @@
 {
   "index": "Introduction",
   "antlr": "Antlr",
-  "advanced": "Advanced",
+  "competitive-programming": "Competitive Programing",
   "about": {
     "title": "About",
     "type": "page"
@@ -9,7 +9,7 @@
   "contact": {
     "title": "Contact ↗",
     "type": "page",
-    "href": "https://twitter.com/shuding_",
+    "href": "https://www.linkedin.com/in/chesiver-yidongliu/",
     "newWindow": true
   }
 }
