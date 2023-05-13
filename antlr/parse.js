@@ -13,9 +13,7 @@ class Visitor extends JavaScriptParserVisitor {
         const text = ctx.getText();
         const node = {
             name,
-            attributes: {
-                text,
-            }
+            text,
         };
         if (ctx.children) {
             node.children = ctx.children.map(child => {
@@ -24,10 +22,8 @@ class Visitor extends JavaScriptParserVisitor {
                 } else {
                     const text = child.getText();
                     return {
-                        name: 'Terminal',
-                        attributes: {
-                            text,
-                        }
+                        name,
+                        text,
                     };
                 }
             });
@@ -42,45 +38,35 @@ class Visitor extends JavaScriptParserVisitor {
     visitVarModifier(ctx) {
         return {
             name: 'VarModifier',
-            attributes: {
-                text: ctx.children[0].getText(),
-            }
+            text: ctx.children[0].getText(),
         };
     }
 
     visitIdentifier(ctx) {
         return {
             name: 'Identifier',
-            attributes: {
-                text: ctx.children[0].getText(),
-            }
+            text: ctx.children[0].getText(),
         };
     }
 
     visitEos(ctx) {
         return {
             name: 'Eos',
-            attributes: {
-                text: ctx.children[0].getText(),
-            }
+            text: ctx.children[0].getText(),
         };
     }
 
     visitLiteral(ctx) {
         return {
             name: 'Literal',
-            attributes: {
-                text: ctx.children[0].getText(),
-            }
+            text: ctx.children[0].getText(),
         };
     }
 
     visitLiteralExpression(ctx) {
         return {
             name: 'LiteralExpression',
-            attributes: {
-                text: ctx.children[0].getText(),
-            }
+            text: ctx.children[0].getText(),
         };
     }
 
