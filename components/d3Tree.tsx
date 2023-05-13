@@ -71,7 +71,6 @@ export default function D3Tree() {
     }
   }
   return (
-    // `<Tree />` will fill width/height of its container; in this case `#treeWrapper`.
     <div>
       <div style={{borderStyle: 'solid', borderWidth: '3px'}}>
       <CodeMirror
