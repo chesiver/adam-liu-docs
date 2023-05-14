@@ -1,6 +1,6 @@
 {
   "index": "Introduction",
-  "antlr": "Antlr",
+  "parser-generator": "Parser Generator",
   "competitive-programming": "Competitive Programing",
   "about": {
     "title": "About",
