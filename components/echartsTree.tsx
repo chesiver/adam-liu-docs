@@ -56,9 +56,14 @@ export default function EchartsTree() {
       const a = 5;
   };
 `;
-    const initParseTree = GetParserTree(initText);
+    // const initParseTree = GetParserTree(initText);
+    // initOptions.series[0].data = [initParseTree];
+    const [text, setText] = useState(initText)
     const [options, setOptions] = useState(initOptions)
     const textChanged = (text) => {
+        setText(text)
+    }
+    const refreshParseTree = () => {
         try {
             const parseTree = GetParserTree(text);
             const updatedOptions = Object.assign({}, options, {
@@ -74,16 +79,16 @@ export default function EchartsTree() {
         }
     }
 
-    initOptions.series[0].data = [initParseTree];
-
     return <div style={{ borderStyle: 'solid', borderWidth: '2px' }}>
-        <div style={{ borderStyle: 'solid', borderWidth: '3px' }}>
+        <div style={{ borderStyle: 'solid', borderWidth: '1px' }}>
             <CodeMirror
                 value={initText}
-                height="200px"
+                height='200px'
                 extensions={[javascript({ jsx: true })]}
+                theme='dark'
                 onChange={textChanged}
             />
+            <button style={{ borderStyle: 'solid', borderWidth: '2px' }} onClick={refreshParseTree}>Parse Code</button>
         </div>
         <ReactECharts option={options} style={{ width: '100%', height: '600px' }} />
     </div>
