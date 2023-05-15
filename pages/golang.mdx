@@ -1,0 +1,214 @@
+## Useful Golang Concept
+
+I feel like nothing is more accurate than golang's official spec, but reading the spec could be really time-consuming.
+So I quote some important concepts here which I think be crucial for understanding golang's type system and generics.
+
+### [Types](https://go.dev/ref/spec#Types)
+
+**Type set** of interface types
+
+> An interface type defines a type set. A variable of interface type can store a value of any type that is in the type set of the interface
+
+> In its most basic form an interface specifies a (possibly empty) list of methods. 
+The type set defined by such an interface is the set of types which implement all of those methods, 
+and the corresponding method set consists exactly of the methods specified by the interface
+
+> In a slightly more general form an interface T may use a (possibly qualified) interface type name E as an interface element
+
+> The type set of T is the intersection of the type sets defined by T's explicitly declared methods and the type sets of T’s embedded interfaces
+
+**Implementing** an interface
+
+> A type T implements an interface I if
+> - T is not an interface and is an element of the type set of I; or
+> - T is an interface and the type set of T is a subset of the type set of I. 
+
+### [Properties of types and values](https://go.dev/ref/spec#Properties_of_types_and_values)
+
+**Underlying types**
+
+> Each type T has an underlying type: If T is one of the predeclared boolean, numeric, or string types, or a type literal, 
+the corresponding underlying type is T itself. 
+>
+> Otherwise, T's underlying type is the underlying type of the type to which T refers in its declaration. 
+For a type parameter that is the underlying type of its type constraint, which is always an interface.
+
+**Core types**
+
+> An interface T has a core type if one of the following conditions is satisfied:
+>
+> 1. There is a single type U which is the underlying type of all types in the type set of T; or
+> 2. the type set of T contains only channel types with identical element type E, and all directional channels have the same direction.
+
+
+### [Constants](https://go.dev/ref/spec#Constants)
+
+> Constants may be typed or untyped. Literal constants, true, false, iota, and certain constant expressions containing 
+only untyped constant operands are untyped.
+
+```go
+const a = 2 + 3.0          // a == 5.0   (untyped floating-point constant)
+const b = 15 / 4           // b == 3     (untyped integer constant)
+const c = 15 / 4.0         // c == 3.75  (untyped floating-point constant)
+const Θ float64 = 3/2      // Θ == 1.0   (type float64, 3/2 is integer division)
+const Π float64 = 3/2.     // Π == 1.5   (type float64, 3/2. is float division)
+const d = 1 << 3.0         // d == 8     (untyped integer constant)
+const e = 1.0 << 3         // e == 8     (untyped integer constant)
+const f = int32(1) << 33   // illegal    (constant 8589934592 overflows int32)
+const g = float64(2) >> 1  // illegal    (float64(2) is a typed floating-point constant)
+const h = "foo" > "bar"    // h == true  (untyped boolean constant)
+const j = true             // j == true  (untyped boolean constant)
+const k = 'w' + 1          // k == 'x'   (untyped rune constant)
+const l = "hi"             // l == "hi"  (untyped string constant)
+const m = string(k)        // m == "x"   (type string)
+const Σ = 1 - 0.707i       //            (untyped complex constant)
+const Δ = Σ + 2.0e-4       //            (untyped complex constant)
+const Φ = iota*1i - 1/1i   //            (untyped complex constant)
+```
+
+
+### Generics
+
+#### [Type Instantiations](https://tip.golang.org/ref/spec#Instantiations)
+
+{/* [Generic types must be instantiated when they are used](https://stackoverflow.com/a/71282839) */}
+
+```
+type parameter list    type arguments    after substitution
+
+[P any]                int               int satisfies any
+[S ~[]E, E any]        []int, int        []int satisfies ~[]int, int satisfies any
+[P io.Writer]          string            illegal: string doesn't satisfy io.Writer
+[P comparable]         any               any satisfies (but does not implement) comparable
+```
+
+#### [Type Inference](https://tip.golang.org/ref/spec#Type_inference)
+
+
+> 1. apply function argument type inference to all typed ordinary function arguments
+> 2. apply constraint type inference
+> 3. apply function argument type inference to all untyped ordinary function arguments using the default type for each of the untyped function arguments
+> 4. apply constraint type inference
+
+**Type Unification**
+
+> Unification works by comparing the structure of pairs of types: their structure disregarding type parameters must be identical, and types other than type parameters must be equivalent
+
+> If T1 and T2 are type parameters, []map[int]bool can be unified with any of the following:
+
+```
+[]map[int]bool   // types are identical
+T1               // adds T1 → []map[int]bool to substitution map
+[]T1             // adds T1 → map[int]bool to substitution map
+[]map[T1]T2      // adds T1 → int and T2 → bool to substitution map
+```
+
+> []map[int]bool cannot be unified with any of
+
+```
+int              // int is not a slice
+struct{}         // a struct is not a slice
+[]struct{}       // a struct is not a map
+[]map[T1]string  // map element types don't match
+```
+
+**Function argument type inference**
+
+> Function argument type inference infers type arguments from function arguments: 
+if a function parameter is declared with a type T that uses type parameters, 
+unifying the type of the corresponding function argument with T may infer type arguments 
+for the type parameters used by T.
+
+**Constraint type inference**
+
+> If a type parameter P has a constraint with a core type C, unifying P with C may infer additional type arguments, 
+either the type argument for P, or if that is already known, possibly the type arguments for type parameters used in C
+
+
+#### Examples - Error when instantiate with empty-type-set interface constraint
+
+Sort of related https://github.com/golang/go/issues/51470
+
+> Implementation restriction: A compiler need not report an error if an operand's type is a type parameter 
+with an empty type set. Functions with such type parameters cannot be instantiated; 
+any attempt will lead to an error at the instantiation site.
+
+
+{/* Related to github issue: https://github.com/golang/go/issues/52507 */}
+
+```go copy
+package main
+
+type X interface {
+	Required()
+}
+
+type A1 struct{}
+
+type A2 struct{}
+
+func (*A2) Required() {}
+
+// This might result in interface with empty type set
+type B[U any] interface {
+	X
+	*U
+}
+
+type C[T B[U], U any] struct {
+}
+
+func CreateC[T B[U], U any](_ *U) *C[T, U] {
+	return &C[T, U]{}
+}
+
+func main() {
+	// CreateC(&A1{}) // will cause failure
+	CreateC(&A2{})
+}
+```
+
+#### Other Reading
+
+[akutz/go-generics-the-hard-way](https://github.com/akutz/go-generics-the-hard-way)
+
+### Reflection
+
+#### Basic
+
+Get Type/Kind/Value from a interface value
+
+```go copy
+var x interface{} = 3.4
+v := reflect.ValueOf(x)
+fmt.Println("type:", v.Type())
+fmt.Println("kind is float64:", v.Kind() == reflect.Float64)
+fmt.Println("value:", v.Float())
+```
+
+```console
+type: float64
+kind is float64: true
+value: 3.4  
+```
+
+Set Value for a interface value whose underlying type is a pointer
+```go copy
+var x float64 = 3.4
+p := reflect.ValueOf(&x)
+v := p.Elem()
+fmt.Printf("x: %v\n", x)
+fmt.Printf("CanSet: %v\n", v.CanSet())
+v.SetFloat(7.1)
+fmt.Printf("x: %v\n", x)
+```
+
+```console
+x: 3.4
+CanSet: true
+x: 7.1 
+```
+
+#### Advanced
+
+[a8m/reflect-examples](https://github.com/a8m/reflect-examples)
