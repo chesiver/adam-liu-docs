@@ -1,0 +1,57 @@
+# Network I/O
+
+Mostly focus on Golang I/O processing.
+
+## Prerequisite
+
+### Epoll
+
+```c
+typedef union epoll_data {
+    int      fd;
+    //...
+} epoll_data_t;
+
+struct epoll_event {
+    uint32_t     events;    /* Epoll events */
+    epoll_data_t data;      /* User data variable */
+};
+
+int epoll_create(int size);
+int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
+int epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout);
+```
+
+epoll_create: open a epoll file descriptor
+
+epoll_ctl: control interface for an epoll file descriptor
+
+epoll_wait: wait for an I/O event on an epoll file descriptor
+
+### Edge-triggerd vs Level-triggered
+
+> In edge-triggered mode, a call to epoll_wait will return only when a new event is enqueued with the epoll object, 
+while in level-triggered mode, epoll_wait will return as long as the condition holds.
+
+### Golang Net Lib Architecture
+
+![Golang Net](../images/golang-net-architecture.jpg "Golang Net")
+
+- Each file descriptor maps to a goroutine. When event is not ready, register tfd into epollfd,
+set goroutine to be Gwaiting state (park). When event is ready, corresponding goroutine is
+set to be GRunnable
+- User invikes read/write syscall in goroutine. Go net lib only helps event listening, and 
+block/ready user's goroutine
+
+
+### Netpoll Lib Architecture
+
+![Netpoll](../images/golang-netpoll-archetecture.jpg "Netpoll")
+
+### Difference between Netpoll && Net
+
+1. Go Net uses Epoll ET. Netpoll uses LT
+2. Netpoll uses more memory when there are many large packets
+3. Go Net has only one event loop. Netpoll has many.
+4. Go Net one conn maps to one goroutine. Netpoll uses a pool of goroutines
+5. Netpoll supports zero copy.
