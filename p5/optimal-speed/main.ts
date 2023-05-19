@@ -1,24 +1,23 @@
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
+import type P5 from 'p5'
 
-import { Point } from '../common'
+import { Base, Point } from '../common'
 import { Points } from './points'
 
 const points = new Points();
 const sPoints = new Points();
 const rPoints = new Points();
 const uPoints = new Points();
-let nLevels = 5;
+const nLevels = 5;
 let nSamples = 200;
 let showNumber = 0;
 let isShowCurvatures = false, isShownAcceleration = false;
-let timeStep = 1.0 / 30;
 let lapTime = 0;
 let timing = '';
 let ms = 0, me = 0;
-const maxAcceleration = 100;
 
 function init(p5) {
-    Point.prototype.p5 = p5;
-    Points.prototype.p5 = p5;
+    Base.setP5(p5);
     p5.frameRate(30);
     const str =
         `10
@@ -40,12 +39,12 @@ function init(p5) {
     sPoints.resample(uPoints, nSamples)
 }
 
-function draw(p5) {
+function draw(p5: P5) {
     p5.background(p5.color('white'));
 
     if (p5.mouseIsPressed) {
-        console.log('mouse is pressed')
-        points.copyInto(sPoints); 
+        // console.log('mouse is pressed')
+        points.copyInto(sPoints);
         sPoints.subdivide(nLevels); // subdivides S 'levels' times
     }
 
@@ -82,49 +81,44 @@ function draw(p5) {
     points.showPointsWithIndex();
 }
 
-function mouseClicked(p5) {
-
-}
-
-function mousePressed(p5) {
-    points.pickClosest(new Point(p5.mouseX, p5.mouseY))
+function mousePressed(p5: P5) {
+    points.pickClosest(new Point({ x: p5.mouseX, y: p5.mouseY }))
     if (p5.keyIsPressed) {
-        if(p5.key == 'a') {
-            points.AddPoint(p5.mouseX, p5.mouseY);
-        } // appends vertex after the last one
+        if (p5.key == 'a') {
+            // points.AddPoint(p5.mouseX, p5.mouseY);
+        }
     }
 }
 
-function mouseDragged(p5) {
-    if(!p5.keyIsPressed) {
+function mouseDragged(p5: P5) {
+    if (!p5.keyIsPressed) {
         points.dragPicked();
     }
 }
 
-function keyPressed(p5) {
+function keyPressed(p5: P5) {
     switch (p5.key) {
-        case 's': 
-            points.copyInto(sPoints); 
-            nSamples = sPoints.subdivide(nLevels); // subdivides S 'levels' times
-            sPoints.copyInto(rPoints); 
-            sPoints.resample(uPoints, nSamples);
-            showNumber = 0;
-            break;
-        case ')':
-            isShowCurvatures = !isShowCurvatures;
-            rPoints.setCurvatures();
-            break;
-        case '*':
-            isShownAcceleration = !isShownAcceleration;
-            rPoints.setAccelerations();
-            break;
+    case 's':
+        points.copyInto(sPoints);
+        nSamples = sPoints.subdivide(nLevels); // subdivides S 'levels' times
+        sPoints.copyInto(rPoints);
+        sPoints.resample(uPoints, nSamples);
+        showNumber = 0;
+        break;
+    case ')':
+        isShowCurvatures = !isShowCurvatures;
+        rPoints.setCurvatures();
+        break;
+    case '*':
+        isShownAcceleration = !isShownAcceleration;
+        rPoints.setAccelerations();
+        break;
     }
 }
 
 export {
     init,
     draw,
-    mouseClicked,
     keyPressed,
     mousePressed,
     mouseDragged,

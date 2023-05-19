@@ -1,13 +1,20 @@
-import { Point, CopyPoint, MoveByDistanceTowards, Dist, Dist2, Unit, Det, Rotate, VectorFromPoints, Sum, Norm } from '../common'
+import { Point, Vector, Dist, Dist2, Unit, Det, Rotate, Sum, Norm, MoveByDistanceTowards, Base } from '../common'
 import { CentripetalMidcourseCorrected } from './interpolation'
 import { ShowPointWithVector } from '../util'
 
 const maxAcceleration = 100;
 
-class Points {
+class Points extends Base {
+
+    private nPickedVertex = 0;
+    private isLoop = true;
+    private pointsVector: Array<Point>;
+    private curvatures: Array<number>;
+    private accelerations: Array<Vector>;
+
     constructor() {
+        super();
         this.nPickedVertex = 0;
-        this.maxNumber = 100000;
         this.isLoop = true;
         this.pointsVector = [];
         this.curvatures = [];
@@ -19,8 +26,8 @@ class Points {
         this.curvatures = [];
         this.accelerations = [];
     }
-    addPoint(x, y) {
-        this.pointsVector.push(new Point(x, y));
+    addPoint(x: number, y: number) {
+        this.pointsVector.push(new Point({ x: x, y: y }));
     }
     getPoint(i) {
         return this.pointsVector[i];
@@ -30,19 +37,19 @@ class Points {
     dragPicked() {
         this.pointsVector[this.nPickedVertex].moveWithMouse();
     }
-    pickClosest(p) {
+    pickClosest(p: Point) {
         this.nPickedVertex = 0;
         for (let i = 1; i < this.pointsVector.length; i += 1) {
             if (Dist2(this.pointsVector[i], p) < Dist2(this.pointsVector[this.nPickedVertex], p)) {
                 this.nPickedVertex = i;
             }
         }
-        console.log('!!!!! picked', this.nPickedVertex)
+        // console.log('!!!!! picked', this.nPickedVertex)
     }
 
     // draw
-    drawPoints(color) {
-        const p5 = this.p5;
+    drawPoints(color: string) {
+        const p5 = Points.p5;
         if (color !== undefined) {
             p5.stroke(p5.color(color));
         }
@@ -53,7 +60,7 @@ class Points {
         p5.endShape();
     }
     drawCurve() {
-        const p5 = this.p5;
+        const p5 = Points.p5;
         if (this.isLoop) {
             p5.beginShape();
             for (let i = 0; i < this.pointsVector.length; i += 1) {
@@ -69,20 +76,20 @@ class Points {
         }
     }
     showPointsWithIndex() {
-        const p5 = this.p5;
+        const p5 = Points.p5;
         p5.noStroke()
         p5.textSize(20);
         for (let i = 0; i < this.pointsVector.length; i += 1) {
             p5.fill('blue')
             this.pointsVector[i].show(10);
             p5.fill('green')
-            p5.text('' + i,  this.pointsVector[i].x + 10,  this.pointsVector[i].y - 10);
+            p5.text('' + i, this.pointsVector[i].x + 10, this.pointsVector[i].y - 10);
         }
     }
 
     // Curvature: computes 1 / radius of circum circle to (A,B,C)
     // https://en.wikipedia.org/wiki/Menger_curvature#Definition
-    curvature(p, q, r) {
+    curvature(p: Point, q: Point, r: Point) {
         const a = Dist(q, r), b = Dist(r, p), c = Dist(p, q);
         const s = (a + b + c) / 2;
         const d = s * (a + b - s) * (b + c - s) * (c + a - s);
@@ -97,11 +104,11 @@ class Points {
         }
     }
     showCurvatures() {
-        const p5 = this.p5;
+        const p5 = Points.p5;
         const curvatureScale = 2000;
         for (let i = 0; i < this.pointsVector.length; i += 1) {
             const a = this.pointsVector[this.prev(i)], b = this.pointsVector[i], c = this.pointsVector[this.next(i)];
-            const ab = VectorFromPoints(a, b), ac = VectorFromPoints(a, c);
+            const ab = new Vector({ p: a, q: b }), ac = new Vector({ p: a, q: c });
             const k = this.curvature(a, b, c);
             const g = k * curvatureScale;
             if (Det(ac, ab) > 0) {
@@ -116,12 +123,12 @@ class Points {
     setAccelerations() {
         for (let i = 0; i < this.pointsVector.length; i += 1) {
             const a = this.pointsVector[this.prev(i)], b = this.pointsVector[i], c = this.pointsVector[this.next(i)];
-            const ba = VectorFromPoints(b, a), bc = VectorFromPoints(b, c);
+            const ba = new Vector({ p: b, q: a }), bc = new Vector({ p: b, q: c });
             this.accelerations[i] = Sum(ba, bc);
         }
     }
     showAccelerations() {
-        const p5 = this.p5;
+        const p5 = Points.p5;
         const accelerationScale = 30;
         for (let i = 0; i < this.pointsVector.length; i += 1) {
             if (Norm(this.accelerations[i]) > maxAcceleration / accelerationScale) {
@@ -131,16 +138,16 @@ class Points {
         }
     }
 
-    subdivide(numberOfSubdivisionSteps) {
+    subdivide(numberOfSubdivisionSteps: number) {
         for (let i = 0; i < numberOfSubdivisionSteps; i += 1) {
             this.subdivideCentripetal();
         }
         return this.pointsVector.length
     }
     subdivideCentripetal() {
-        const s = [];
+        const s: Array<Point> = [];
         for (let i = 0; i < this.pointsVector.length; i += 1) {
-            s.push(new Point(this.pointsVector[i].x, this.pointsVector[i].y));
+            s.push(new Point({ x: this.pointsVector[i].x, y: this.pointsVector[i].y }));
             s.push(CentripetalMidcourseCorrected(this.pointsVector[this.prev(i)], this.pointsVector[i], this.pointsVector[this.next(i)], this.pointsVector[this.next(this.next(i))]));
         }
         this.pointsVector = s;
@@ -153,27 +160,27 @@ class Points {
         }
         return l;
     }
-    resample(targetPts, nSample) {
+    resample(targetPts: Points, nSample: number) {
         targetPts.clear()
         if (this.pointsVector.length == 0) {
             return
         }
         const l = this.totalLength();
-        const r = [];
-        let q = new Point();
+        const r: Array<Point> = [];
+        let q = new Point({});
         const d = l / nSample;
         let rd = d; // remaining distance to next sample
         let cl = 0; // length of remaining portion of current edge
         let nk = 1; // index of the next vertex on the original curve
         let c = 0; // number of already added points
         q.setTo(this.pointsVector[0]);
-        r.push(CopyPoint(q));
+        r.push(new Point({ p: q }));
         c += 1;
         while (c < nSample) {
             cl = Dist(q, this.pointsVector[nk]);
             if (rd < cl) {
                 q = MoveByDistanceTowards(q, rd, this.pointsVector[nk]);
-                r.push(CopyPoint(q));
+                r.push(new Point({ p: q }));
                 c += 1
                 cl -= rd;
                 rd = d;
@@ -202,7 +209,7 @@ class Points {
         this.nPickedVertex = 0;
     }
 
-    copyInto(q) {
+    copyInto(q: Points) {
         q.clear();
         for (let i = 0; i < this.pointsVector.length; i += 1) {
             q.addPoint(this.pointsVector[i].x, this.pointsVector[i].y);
