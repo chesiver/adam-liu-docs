@@ -1,4 +1,4 @@
-import { Point, Vector, Dist } from '../common'
+import { Point, Vector, Dist } from './common'
 
 function n2(a, A, b, B, t) { return A + (t - a) / (b - a) * (B - A); }
 function n3(a, A, b, B, c, C, t) { return n2(a, n2(a, A, b, B, t), c, n2(b, B, c, C, t), t); }

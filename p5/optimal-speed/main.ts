@@ -82,6 +82,7 @@ function draw(p5: P5) {
 }
 
 function mousePressed(p5: P5) {
+    if (p5.mouseX < 0 || p5.mouseX > p5.width || p5.mouseY < 0 || p5.mouseY > p5.height) return;
     points.pickClosest(new Point({ x: p5.mouseX, y: p5.mouseY }))
     if (p5.keyIsPressed) {
         if (p5.key == 'a') {
@@ -91,6 +92,7 @@ function mousePressed(p5: P5) {
 }
 
 function mouseDragged(p5: P5) {
+    if (p5.mouseX < 0 || p5.mouseX > p5.width || p5.mouseY < 0 || p5.mouseY > p5.height) return;
     if (!p5.keyIsPressed) {
         points.dragPicked();
     }

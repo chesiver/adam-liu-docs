@@ -1,5 +1,5 @@
 import { Point, Vector, Dist, Dist2, Unit, Det, Rotate, Sum, Norm, MoveByDistanceTowards, Base } from '../common'
-import { CentripetalMidcourseCorrected } from './interpolation'
+import { CentripetalMidcourseCorrected } from '../interpolation'
 import { ShowPointWithVector } from '../util'
 
 const maxAcceleration = 100;
