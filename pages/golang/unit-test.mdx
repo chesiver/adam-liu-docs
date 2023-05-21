@@ -1,0 +1,23 @@
+## About Dependency Injection
+
+#### Use DI Widely as Java Boy
+
+Since I started my career at Oracle and moved to Amazon, I became mostly familar with Java.
+In AWS, a lightweight depenedency injection framework https://github.com/google/dagger was heavily used. At that time
+I noticed many of my teammates somehow abused its usage and injected some dependencies which were better organized
+as global singletons.
+
+#### Gophers dislike DI Library
+
+https://stackoverflow.com/a/60271405
+
+In Bytedance, most services are wirtte in golang and things become completely opposite. Denpendencies are 
+mostly defined as global variable and initialized in init() function.
+
+This caused serious problems when writing unit test. If one dependenciy is global, one can only create one corresponding 
+mock object for it. Imaging we have a 2 concurrently running tests which need different behaviors of this mock...  
+
+#### Manually Do DI
+
+DI libraries do seem a little bit heavy for golan. But DI is still important if we want to have inverse-of-control to 
+facilitate writing unit tests. So currently I'm more inclined to do DI manually.
