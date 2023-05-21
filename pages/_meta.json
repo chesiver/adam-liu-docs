@@ -1,5 +1,6 @@
 {
   "index": "Introduction",
+  "p5-js": "Graphics - P5.js",
   "parser-generator": "Parser Generator",
   "network-io": "Network I/O",
   "golang": "Golang",

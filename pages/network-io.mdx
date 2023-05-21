@@ -4,9 +4,12 @@ Mostly focus on Golang I/O processing.
 
 When staying at Bytedance, a RPC framework is heavly used throught the entire company - [Kitex](https://github.com/cloudwego/kitex). Internally a network library
 [Netpoll](https://github.com/cloudwego/netpoll) is used. 
-a
 
-I was a little bit supprised that it doesn't use golang's build-in net library, which means one goroutine per connection is not enough for use cases. 
+I was a little bit supprised that it doesn't use golang's build-in net library, which means the commonly used pattern
+
+*one goroutine per connection* 
+
+is not enough for their use cases. 
 
 ## Prerequisite
 
