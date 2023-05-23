@@ -1,0 +1,21 @@
+## Sed Command
+
+Sed command is very useful when combined with other comamnds in a pipeline, so I decide to separate its usage as a single page.
+
+A very detailed guide && plenty examples of sed: https://www.grymoire.com/Unix/Sed.html
+
+### Extract patterns
+
+```bash
+echo "US/Central - 10:26 PM (CST)" | sed -E -n "s/[^[:space:]]+ - ([0-9]{2}:[0-9]{2}).*$/\1/p"
+```
+
+| Symbol     | Usage                                                              |
+| ---------- | ------------------------------------------------------------------ |
+| -E         | Use extended regular expression                                    |
+| -n         | Don't print anything unless an explicit request to print is found. |
+| ^[:space:] | Non-space character                                                |
+| \1         | First captured group                                               |
+| p          | Print                                                              |
+
+By default, sed prints every line, whether the pattern is matched or not. -n combined with p makes sure only matched pattern will be printed.

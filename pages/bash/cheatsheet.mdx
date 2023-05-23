@@ -102,21 +102,21 @@ wc foo.txt             # List number of lines words and characters in the file
 
 ## File Permissions
 
-| # | Permission              | rwx | Binary |
-| - | -                       | -   | -      |
-| 7 | read, write and execute | rwx | 111    |
-| 6 | read and write          | rw- | 110    |
-| 5 | read and execute        | r-x | 101    |
-| 4 | read only               | r-- | 100    |
-| 3 | write and execute       | -wx | 011    |
-| 2 | write only              | -w- | 010    |
-| 1 | execute only            | --x | 001    |
-| 0 | none                    | --- | 000    |
+| #   | Permission              | rwx | Binary |
+| --- | ----------------------- | --- | ------ |
+| 7   | read, write and execute | rwx | 111    |
+| 6   | read and write          | rw- | 110    |
+| 5   | read and execute        | r-x | 101    |
+| 4   | read only               | r-- | 100    |
+| 3   | write and execute       | -wx | 011    |
+| 2   | write only              | -w- | 010    |
+| 1   | execute only            | --x | 001    |
+| 0   | none                    | --- | 000    |
 
 For a directory, execute means you can enter a directory.
 
 | User | Group | Others | Description                                                                                          |
-| -    | -     | -      | -                                                                                                    |
+| ---- | ----- | ------ | ---------------------------------------------------------------------------------------------------- |
 | 6    | 4     | 4      | User can read and write, everyone else can read (Default file permissions)                           |
 | 7    | 5     | 5      | User can read, write and execute, everyone else can read and execute (Default directory permissions) |
 
@@ -213,7 +213,7 @@ ls -l                               # Show where symbolic links are pointing
 
 ### zip
 
-Compresses one or more files into *.zip files.
+Compresses one or more files into \*.zip files.
 
 ```bash
 zip foo.zip /bar.txt                # Compress bar.txt into foo.zip
@@ -224,7 +224,7 @@ zip -r|--recurse-paths foo.zip /bar # Compress directory bar into foo.zip
 
 ### gzip
 
-Compresses a single file into *.gz files.
+Compresses a single file into \*.gz files.
 
 ```bash
 gzip /bar.txt foo.gz           # Compress bar.txt into foo.gz and then delete bar.txt
@@ -233,7 +233,7 @@ gzip -k|--keep /bar.txt foo.gz # Compress bar.txt into foo.gz
 
 ### tar -c
 
-Compresses (optionally) and combines one or more files into a single *.tar, *.tar.gz, *.tpz or *.tgz file.
+Compresses (optionally) and combines one or more files into a single _.tar, _.tar.gz, _.tpz or _.tgz file.
 
 ```bash
 tar -c|--create -z|--gzip -f|--file=foo.tgz /bar.txt /baz.txt # Compress bar.txt and baz.txt into foo.tgz
