@@ -5,6 +5,7 @@
   "network-io": "Network I/O",
   "golang": "Golang",
   "bash": "Bash",
+  "vercel-commands": "Vercel commands",
   "competitive-programming": "Competitive Programming",
   "about": {
     "title": "About",
