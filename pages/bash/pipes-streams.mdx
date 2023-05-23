@@ -1,0 +1,60 @@
+## Streams
+
+Bash receives input and sends output as sequences or **streams** of characters. These streams may be redirected into files or one into another.
+
+There are three descriptors:
+
+| Code | Descriptor | Description          |
+| :--: | :--------: | :------------------- |
+| `0`  |  `stdin`   | The standard input.  |
+| `1`  |  `stdout`  | The standard output. |
+| `2`  |  `stderr`  | The errors output.   |
+
+Redirection makes it possible to control where the output of a command goes to, and where the input of a command comes from. For redirecting streams these operators are used:
+
+| Operator | Description                                                          |
+| :------: | :------------------------------------------------------------------- |
+|   `>`    | Redirecting output                                                   |
+|   `&>`   | Redirecting output and error output                                  |
+|  `&>>`   | Appending redirected output and error output                         |
+|   `<`    | Redirecting input                                                    |
+|   `<<`   | [Here documents](http://tldp.org/LDP/abs/html/here-docs.html) syntax |
+|  `<<<`   | [Here strings](http://www.tldp.org/LDP/abs/html/x17837.html)         |
+
+```bash
+# output of ls will be written to list.txt
+ls -l > list.txt
+
+# append output to list.txt
+ls -a >> list.txt
+
+# all errors will be written to errors.txt
+grep da * 2> errors.txt
+
+# read from errors.txt
+less < errors.txt
+```
+
+## Pipes
+
+We could redirect standard streams not only in files, but also to other programs. **Pipes** let us use the output of a program as the input of another.
+
+In the example below, `command1` sends its output to `command2`, which then passes it on to the input of `command3`:
+
+```
+command1 | command2 | command3
+```
+
+Constructions like this are called **pipelines**.
+
+In practice, this can be used to process data through several programs. For example, here the output of `ls -l` is sent to the `grep` program, which prints only files with a `.md` extension, and this output is finally sent to the `less` program:
+
+```bash
+ls -l | grep .md$ | less
+```
+
+The exit status of a pipeline is normally the exit status of the last command in the pipeline. The shell will not return a status until all the commands in the pipeline have completed. If you want your pipelines to be considered a failure if any of the commands in the pipeline fail, you should set the pipefail option with:
+
+```bash
+set -o pipefail
+```

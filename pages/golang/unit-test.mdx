@@ -11,13 +11,64 @@ as global singletons.
 
 https://stackoverflow.com/a/60271405
 
-In Bytedance, most services are wirtte in golang and things become completely opposite. Denpendencies are 
+In Bytedance, most services are written in golang and things become completely opposite. Denpendencies are 
 mostly defined as global variable and initialized in init() function.
 
-This caused serious problems when writing unit test. If one dependenciy is global, one can only create one corresponding 
-mock object for it. Imaging we have a 2 concurrently running tests which need different behaviors of this mock...  
+This caused serious problems when writing unit tests. If one dependenciy is global, then one can only create one corresponding 
+global mock object. Then imaging we have a 2 concurrently running tests which need different behaviors of this mock...  
 
 #### Manually Do DI
 
-DI libraries do seem a little bit heavy for golan. But DI is still important if we want to have inverse-of-control to 
-facilitate writing unit tests. So currently I'm more inclined to do DI manually.
+DI libraries are indeed too heavy for golang. But DI is still important if we want to have inverse-of-control, also to 
+facilitate writing unit tests. So currently when coding in golang, I prefer to do DI manually.
+
+## Mock in golang
+
+First of all, an important thing to bear in mind is that 
+
+**You can only mock interfaces in golang. Better not to mock structs.**
+
+https://stackoverflow.com/a/41054865
+
+There are some libraries like https://github.com/agiledragon/gomonkey which modifies compiled go program
+but that could be tricky and won't work on some cpu architecture: https://github.com/agiledragon/gomonkey/issues/70
+
+### Use of [GoMock](https://github.com/golang/mock)
+
+#### Install
+
+```bash copy
+go install github.com/golang/mock/mockgen@v1.6.0
+```
+
+```bash copy
+go get github.com/golang/mock/gomock
+```
+
+#### Generating Mocks
+
+https://github.com/chesiver/gomock-playground
+
+```bash
+mockgen -source clients/client.go -destination mocks/client.go
+```
+
+Then we can create mock client when running test. 
+
+To use mock, we must create a controller which is responsible for tracking and asserting 
+the expectations of its associated mock objects.
+
+```go
+func InvokeClient(client clients.Client) {
+	client.GetData()
+}
+```
+
+```go
+func TestInvokeClient(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockClient := mock_clients.NewMockClient(ctrl)
+	mockClient.EXPECT().GetData().Times(1)
+	InvokeClient(mockClient)
+}
+```

@@ -1,10 +1,12 @@
 {
   "index": "Introduction",
   "p5-js": "Graphics - P5.js",
-  "parser-generator": "Parser Generator",
+  "study-compiler": "Study Compiler",
   "network-io": "Network I/O",
   "golang": "Golang",
-  "competitive-programming": "Competitive Programing",
+  "bash": "Bash",
+  "vercel-commands": "Vercel commands",
+  "competitive-programming": "Competitive Programming",
   "about": {
     "title": "About",
     "type": "page"
