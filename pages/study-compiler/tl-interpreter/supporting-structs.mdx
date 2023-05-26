@@ -1,0 +1,192 @@
+## Supporting Structs
+
+Before actually evaluating the input source, we'll have to create a couple of supporting structs like a struct that 
+
+1. represents a function
+2. a generic value
+3. a scope: something that keeps track of our variables.
+
+### TLValue
+
+https://github.com/chesiver/tiny-language-antlr4-golang/blob/master/component/tlvalue.go
+
+Since TL is a dynamically type language, we'll create a generic value, called TLValue that gets checked and operated on at runtime. 
+
+```go
+type TLValue struct {
+	value interface{}
+}
+
+func (v *TLValue) isInt() bool {
+	return reflect.TypeOf(v.value).Kind() == reflect.Int
+}
+
+func (v *TLValue) asInt() int {
+	if v.isDouble() {
+		return int(v.asDouble())
+	}
+	return v.value.(int)
+}
+
+func (v *TLValue) isDouble() bool {
+	return reflect.TypeOf(v.value).Kind() == reflect.Float64
+}
+
+func (v *TLValue) asDouble() float64 {
+	if v.isInt() {
+		return float64(v.asInt())
+	}
+	return v.value.(float64)
+}
+
+func (v *TLValue) isNumber() bool {
+	return v.isInt() || v.isDouble()
+}
+
+func (v *TLValue) isString() bool {
+	return reflect.TypeOf(v.value).Kind() == reflect.String
+}
+
+func (v *TLValue) asString() string {
+	return v.value.(string)
+}
+
+func (v *TLValue) isBool() bool {
+	return reflect.TypeOf(v.value).Kind() == reflect.Bool
+}
+
+func (v *TLValue) asBool() bool {
+	return v.value.(bool)
+}
+
+func (v *TLValue) isList() bool {
+	return reflect.TypeOf(v.value).Kind() == reflect.Slice
+}
+
+func (v *TLValue) asList() []*TLValue {
+	return v.value.([]*TLValue)
+}
+
+func (v *TLValue) equals(other *TLValue) bool {
+	if v == NULL {
+		return other == NULL
+	}
+	if v == other {
+		return true
+	}
+	if v.isInt() && other.isInt() {
+		return v.asInt() == other.asInt()
+	}
+	if v.isDouble() && other.isDouble() {
+		return v.asDouble() == other.asDouble()
+	}
+	if v.isString() && other.isString() {
+		return v.asString() == other.asString()
+	}
+	if v.isBool() && other.isBool() {
+		return v.asBool() == other.asBool()
+	}
+	return false
+}
+
+func (v *TLValue) String() string {
+	if v.isList() {
+		arr := v.asList()
+		res := "["
+		for i := 0; i < len(arr)-1; i += 1 {
+			res += arr[i].String() + ", "
+		}
+		res += arr[len(arr)-1].String() + "]"
+		return res
+	} else {
+		return fmt.Sprintf("%v", v.value)
+	}
+}
+```
+
+### Function
+
+https://github.com/chesiver/tiny-language-antlr4-golang/blob/master/component/function.go
+
+Notice that a Function creates its own Scope instance and the invoke(...) takes a list of TLValues. 
+It also returns a TLValue by invoking EvalVisitor.evaluate() (EvalVisitor is an implementation of Visitor)
+
+```go
+type Function struct {
+	parentScope *Scope
+	params      []antlr.TerminalNode
+	block       antlr.ParseTree
+}
+
+func (f *Function) invoke(args []*TLValue, functions map[string]*Function) *TLValue {
+	if len(args) != len(f.params) {
+		fmt.Printf("Illegal Function call\n")
+		return nil
+	}
+	scopeNext := &Scope{
+		parent:     f.parentScope,
+		variables:  make(map[string]*TLValue),
+		isFunction: true,
+	}
+	for i := 0; i < len(f.params); i++ {
+		scopeNext.assignParam(f.params[i].GetText(), args[i])
+	}
+	evalNext := EvalVisitor{scope: scopeNext, functions: functions}
+	return evalNext.Visit(f.block).(*TLValue)
+}
+```
+
+### Scope
+
+https://github.com/chesiver/tiny-language-antlr4-golang/blob/master/component/scope.go
+
+Every code block, and functions, have their own local variable scope. Note that for-, while- and if-statements also have their own code block.
+This class keeps track of it's parent scope to resolve variables itself has no notion of, and will store all declared variables 
+(or ask a parent scope to re-assign a certain variable if it's not declared in its own scope).
+
+
+```go
+package component
+
+type Scope struct {
+	parent     *Scope
+	variables  map[string]*TLValue
+	isFunction bool
+}
+
+func NewScope() *Scope {
+	return &Scope{nil, make(map[string]*TLValue), false}
+}
+
+func (s *Scope) assignParam(name string, val *TLValue) {
+	s.variables[name] = val
+}
+
+func (s *Scope) resolve(name string) *TLValue {
+	val, existed := s.variables[name]
+	if existed {
+		return val
+	} else if !s.isFunction && s.parent != nil {
+		return s.parent.resolve(name)
+	} else {
+		return nil
+	}
+}
+
+func (s *Scope) reAssign(name string, val *TLValue) {
+	_, existed := s.variables[name]
+	if existed {
+		s.variables[name] = val
+	} else if s.parent != nil {
+		s.parent.reAssign(name, val)
+	}
+}
+
+func (s *Scope) Assign(name string, val *TLValue) {
+	if !s.isFunction && s.resolve(name) != nil {
+		s.reAssign(name, val)
+	} else {
+		s.variables[name] = val
+	}
+}
+```

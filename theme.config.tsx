@@ -13,6 +13,9 @@ const config: DocsThemeConfig = {
     footer: {
         text: 'Nextra Docs Template',
     },
+    sidebar: {
+        defaultMenuCollapseLevel: 3,
+    }
 }
 
 export default config
