@@ -1,0 +1,190 @@
+### Basic Types 
+TL supports 4 data types: number, string, boolean and a list (and there's null too).
+
+```
+// Number  
+1  
+3.14159265  
+0.1  
+  
+// Boolean  
+true  
+false  
+  
+// String  
+'foo bar baz'  
+'a " b'  
+"c ' d"  
+  
+// List  
+[]  
+[1, 2, 3, 'str']  
+  
+// Null   
+null  
+```
+
+### Additive expressions
+Addition and subtraction:
+
+```
+3 + 8  
+4 - 78  
+[3,4,5] - 4  
+```
+
+### Multiplicative expressions
+Multiplication, division and modulus:
+
+```
+9 * 3  
+5 / 2  
+5 % 3  
+"ab" * 3  
+```
+
+### Power expressions
+Raising to the power:
+
+```
+2^10  
+4^2^3 
+```
+
+### Equality expressions
+Equals and not-equals:
+
+```
+3 == 1+2  
+1 != 2  
+"ab" * 3 == "ababab"  
+[3,4,5] - 4 == [3,5]  
+```
+
+### Relational expressions
+Less than, greater that, less than or equals and greater than or equals:
+
+```
+5 >= 5  
+1 < 2  
+'B' > 'A'  
+```
+
+### Unary operator
+Negative minus and boolean negation:
+
+```
+-3 == 1-4  
+true == !false  
+```
+
+### Built-in functions
+There are four built-in functions: println(...), print(...), assert(...) and size(...):
+
+```
+println('print me _with_ a line break');  
+print('print me _without_ a line break');  
+assert(true); // if false, an error is thrown  
+assert(size([1,2,3]) == 3);  
+assert(size('a"b') == size('a\'b'));  
+```
+
+### Variable assignment
+As you can see by the example below, TL is dynamically typed.
+
+```
+lst = [10, 20, 30];  
+temp = true;  
+x = 12 + 34;  
+x = temp;  
+lst = [1,2,3,[4,5,6]];  
+lst[3][0] = 44;  
+```
+
+### Variable lookup
+```
+lst = [[10,11,12], 20, 30, "ABC"];  
+temp = lst[1];  
+assert(temp == 20);  
+assert(lst[0][2] == 12);  
+assert(lst[3][0] == "A");  
+```
+
+### Function declaration and invoking
+```
+def twice(n)  
+  return n+n;  
+end  
+  
+assert(twice(5) == 10);  
+```
+
+### Control flow statements
+There will be two types of control flow statements: for- and while statements:
+
+```
+sum = 0;  
+for n = 1 to 5 do  
+  sum = sum + n;  
+end  
+  
+assert(sum == (1+2+3+4+5));  
+  
+steps = 0;  
+while sum > 0 do  
+  sum = sum - 5;  
+  steps = steps + 1;  
+end  
+  
+assert(steps == 3);  
+```
+
+### If statement
+```
+if 1+1 == 2 do  
+  assert(true);  
+end  
+  
+if A do  
+  // ...  
+else if B do  
+  // ...  
+else do  
+  // ...  
+end  
+```
+
+### Variable scopes
+if-, for- and while-statements all have their own scope, and if a variable is not defined in their own scope, 
+they will look at their parent scope for it (and so on).
+
+```
+a = 2;  
+  
+if true do  
+  b = a + a;  
+  assert(b == 4);  
+end  
+  
+println(b); // ERROR: `b` is local in the `for` statement!  
+```
+
+However, functions have their own private scope which has no access to a scope above it. This is illustrated in the following example:
+
+```
+a = 1;  
+  
+def twicePlusOne(n)  
+  return (n * 2) + a; // ERROR: `a` is not in the scope of the function `twicePlusOne`  
+end  
+  
+def test(a)  
+  assert(a == 1);  
+  a = 100; // `a` is now a local variable  
+  assert(a == 100);  
+end  
+  
+test(a);  
+  
+assert(a == 1); // `a` is still 1  
+```

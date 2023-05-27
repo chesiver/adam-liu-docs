@@ -1,0 +1,154 @@
+### Antlr to Generate Visitor
+
+https://github.com/chesiver/tiny-language-antlr4-golang/blob/master/main.go#L1
+
+```bash
+java -jar ./grammar/antlr-4.12.0-complete.jar -Xexact-output-dir -o parser -visitor -no-listener -Dlanguage=Go ./grammar/TinyLanguage.g4
+```
+
+### Visitor Interface 
+
+The generated interface is like
+
+```go
+type TinyLanguageVisitor interface {
+    antlr.ParseTreeVisitor
+
+	// Visit a parse tree produced by TinyLanguageParser#prog.
+	VisitProg(ctx *ProgContext) interface{}
+
+	// Visit a parse tree produced by TinyLanguageParser#block.
+	VisitBlock(ctx *BlockContext) interface{}
+
+	// Visit a parse tree produced by TinyLanguageParser#statement.
+	VisitStatement(ctx *StatementContext) interface{}
+
+    // ...
+    // ...
+    // ...
+}
+```
+
+### Visitor Implementation
+
+Arithmetic expressions' visit is pretty straightforward. Take AddExpression for example
+
+```go
+func (e *EvalVisitor) add(left *TLValue, right *TLValue) interface{} {
+	if left.isNumber() && right.isNumber() {
+		return &TLValue{left.asDouble() + right.asDouble()}
+	}
+	if left.isString() && right.isString() {
+		return &TLValue{left.asString() + right.asString()}
+	}
+	return NULL
+}
+
+func (e *EvalVisitor) VisitAddExpression(ctx *parser.AddExpressionContext) interface{} {
+	left := e.Visit(ctx.Expression(0)).(*TLValue)
+	right := e.Visit(ctx.Expression(1)).(*TLValue)
+	switch ctx.GetOp().GetTokenType() {
+	case parser.TinyLanguageLexerAdd:
+		return e.add(left, right)
+	case parser.TinyLanguageLexerSubtract:
+		return e.sub(left, right)
+	default:
+		return NULL
+	}
+}
+```
+
+Control flow statements' visit is actually also very straightforward. **All control flow types exist in the host language Golang**
+(as also in other common general purpose language). Take ForStatement for example,
+
+```go
+func (e *EvalVisitor) VisitForStatement(ctx *parser.ForStatementContext) interface{} {
+	fmt.Printf("Enter - For Statement\n")
+	start := e.Visit(ctx.Expression(0)).(*TLValue).asInt()
+	end := e.Visit(ctx.Expression(1)).(*TLValue).asInt()
+	for i := start; i < end; i += 1 {
+		e.scope.Assign(ctx.Identifier().GetText(), &TLValue{i})
+		r := e.Visit(ctx.Block()).(*TLValue)
+		if r != VOID {
+			return r
+		}
+	}
+	return VOID
+}
+```
+
+For function definition, we must remember it's parameters and generate a unique id (signature)
+
+```go
+func (e *EvalVisitor) VisitFunctionDecl(ctx *parser.FunctionDeclContext) interface{} {
+	fmt.Printf("Enter VisitFunctionDecl\n")
+	var params []antlr.TerminalNode
+	if idList := ctx.IdList().(*parser.IdListContext); idList != nil {
+		params = idList.AllIdentifier()
+	}
+	block := ctx.Block()
+	id := ctx.Identifier().GetText() + "-" + strconv.Itoa(len(params))
+	e.functions[id] = &Function{e.scope, params, block}
+	return VOID
+}
+```
+
+Everytime when a function is invoked, we will visit this function's body(Block)
+
+```go
+func (f *Function) invoke(args []*TLValue, functions map[string]*Function) *TLValue {
+	if len(args) != len(f.params) {
+		fmt.Printf("Illegal Function call\n")
+		return nil
+	}
+	scopeNext := &Scope{
+		parent:     f.parentScope,
+		variables:  make(map[string]*TLValue),
+		isFunction: true,
+	}
+	for i := 0; i < len(f.params); i++ {
+		scopeNext.assignParam(f.params[i].GetText(), args[i])
+	}
+	evalNext := EvalVisitor{scope: scopeNext, functions: functions}
+	return evalNext.Visit(f.block).(*TLValue)
+}
+
+func (e *EvalVisitor) VisitIdentifierFunctionCall(ctx *parser.IdentifierFunctionCallContext) interface{} {
+	fmt.Printf("Enter VisitIdentifierFunctionCall\n")
+	var params []parser.IExpressionContext
+	if exprList := ctx.ExprList(); exprList != nil {
+		params = exprList.(*parser.ExprListContext).AllExpression()
+	}
+	id := ctx.Identifier().GetText() + "-" + strconv.Itoa(len(params))
+	if function := e.functions[id]; function != nil {
+		var args []*TLValue
+		for _, param := range params {
+			args = append(args, e.Visit(param).(*TLValue))
+		}
+		return function.invoke(args, e.functions)
+	}
+	return VOID
+}
+```
+
+For Block statement, the order of how we should visit its children matters
+
+```go
+func (e *EvalVisitor) VisitBlock(ctx *parser.BlockContext) interface{} {
+	fmt.Printf("Enter - Block\n")
+	scope := Scope{e.scope, make(map[string]*TLValue), false}
+	for _, fctx := range ctx.AllFunctionDecl() {
+		e.Visit(fctx)
+	}
+	for _, sctx := range ctx.AllStatement() {
+		e.Visit(sctx)
+	}
+	if ectx := ctx.Expression(); ectx != nil {
+		val := e.Visit(ectx).(*TLValue)
+		e.scope = scope.parent
+		return val
+	}
+	e.scope = scope.parent
+	return VOID
+}
+```

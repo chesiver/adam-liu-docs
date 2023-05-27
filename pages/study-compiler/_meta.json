@@ -1,3 +1,5 @@
 {
-    "parser-generator": "Parser Generator"
+    "parser-generator": "Parser Generator",
+    "visitor-pattern": "Visitor Pattern",
+    "tl-interpreter": "Tiny Language Interpreter"
 }

@@ -1,0 +1,57 @@
+## Visitor Pattern
+
+https://en.wikipedia.org/wiki/Visitor_pattern
+
+> In object-oriented programming and software engineering, the visitor design pattern is a way of separating an algorithm 
+from an object structure on which it operates. A practical result of this separation is the ability to add new operations 
+to existing object structures without modifying the structures.
+
+We also want to traverse an AST for many different purposes. We may want to print the AST, perform semantic analysis, 
+or generate code. Each of these could be accomplished by refining the notion of tree traversal in extensions of some common superclass.
+
+Thus, the actual work performed upon a node depends on two things: the node type and the traversal type.
+
+The Visitor pattern was introduced to address the above scenario. Instead of spreading all the code for a given traversal 
+throughout the nodes' classes, the code is concentrated in a particular traversal class. 
+That code is called by arranging for each node to
+
+1. Accept a call from a visitor that performs the traversal
+2. Call the visitor back using a method in that visitor that is customized to the node
+
+Let's suppose we wish to traverse our AST to print out its nodes. The traversal class is a particular kind of visitor, and 
+it contains the following kind of code:
+
+```java
+public class PrintTraversal extends Visitor {
+    public void visitStringNode(StringNode n) {....}
+    public void visitIntNode   (IntNode n)    {....}
+    public void visitSymbolNode(SymbolNode n) {....}
+}
+```
+
+Each of the above methods knows how to print out its own particular kind of node.
+
+Each node in turn accepts a call from a particular visitor:
+
+```java
+public class StringNode extends AbstractNode {
+    pubic void accept(Visitor v) {  v.visitStringNode(this); }
+}
+public class IntNode extends AbstractNode {
+    pubic void accept(Visitor v) {  v.visitIntNode(this); }
+}
+public class SymbolNode extends AbstractNode {
+    pubic void accept(Visitor v) {  v.visitSymbolNode(this); }
+}
+```
+
+Because the supplied visitor's actual type could be any subclass of Visitor, this implies that the superclass Visitor 
+must have (potentially abstract) methods.
+
+```java
+public abstract class Visitor {
+    public abstract void visitStringNode(StringNode n) ;
+    public abstract void visitIntNode   (IntNode n)    ;
+    public abstract void visitSymbolNode(SymbolNode n) ;
+}
+```
