@@ -1,7 +1,9 @@
 import { useState } from "react";
 import ReactECharts from 'echarts-for-react';
+import Button from '@mui/material/Button';
 import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
+import FullscreenModal from './fullscreenModal';
 
 import GetParserTree from '../antlr/parse'
 
@@ -58,6 +60,7 @@ export default function EchartsTree() {
 `;
     // const initParseTree = GetParserTree(initText);
     // initOptions.series[0].data = [initParseTree];
+    const [show, setShow] = useState(false);
     const [text, setText] = useState(initText)
     const [options, setOptions] = useState(initOptions)
     const textChanged = (text) => {
@@ -74,22 +77,24 @@ export default function EchartsTree() {
                 ]
             });
             setOptions(updatedOptions)
+            setShow(true);
+            console.log('set show to be true')
         } catch (err) {
             // ignore
         }
     }
 
-    return <div style={{ borderStyle: 'solid', borderWidth: '2px' }}>
-        <div style={{ borderStyle: 'solid', borderWidth: '1px' }}>
+    return <div style={{display: 'flex', 'flexDirection': 'column'}}>
+        <div>
             <CodeMirror
                 value={initText}
-                height='200px'
+                height='300px'
                 extensions={[javascript({ jsx: true })]}
                 theme='dark'
                 onChange={textChanged}
             />
-            <button style={{ borderStyle: 'solid', borderWidth: '2px' }} onClick={refreshParseTree}>Parse Code</button>
         </div>
-        <ReactECharts option={options} style={{ width: '100%', height: '600px' }} />
+        <Button variant="contained" onClick={refreshParseTree}>Parse Code</Button>
+        <FullscreenModal content={<ReactECharts option={options} style={{ width: '100%', height: '100%' }} />} show={show} setShow={setShow}></FullscreenModal>
     </div>
 }

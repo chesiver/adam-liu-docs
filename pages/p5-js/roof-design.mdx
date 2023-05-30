@@ -1,0 +1,56 @@
+## Roof Design
+
+#### 1. isInDiskOnRight(Q, A, B, r): in disk test for edge(A, B)
+
+Test where query point Q lies inside the disk of radius r that is tangent to A and B and that has its center to the right 
+of the oriented Line(A, B).
+
+#### 2. drawDarts(r): draw darts of alpha complex
+
+Assume that $P=\{P_{i}\}^{n}$ is a set of n points. Let $Dart(A,B)$ be the oriented **sidewalk** on the right if $Edge(A,B)$
+oriented from A to B. We say that $Dart(B,A)$ is opposite of $Dart(A,B)$ and vice versa.  $Dart(A,B)$ is **exposed** 
+when the open disk of radius r that has a center on the right of the oriented $Line(A,B)$ and is tangent 
+to A and B contains no point.
+
+A dart is colored red is it's exposed and green otherwise. Don't draw green/green pairs.
+
+#### 3. Define the faces
+
+Let d denote a dart, v denote a vertex. The Darts define red and green loops. The set of darts defines an alpha complex
+S, which may have an empty interior and a set of dangling edges. 
+
+- d.e returns true when dart is exposed(red)
+- d.v is the index of start vertex of d
+- v.d is a dart such that v === d.v
+- d.s and d.u respectively return the next (swing) and previous (unswing) dart in a clockwise ordering of all darts 
+that have d.v as as starting vertex
+
+We define a face F as a topologically open pointset so that $F=iF$
+
+
+#### 4. Concise DES representation
+
+The DES representation proposed there stores the geometry of the alpha-complext in the G[] array, where G[v] 
+is the location of vertex v, and only 3 arrays: D, E and S: D[v] stores v.d, E[d] stores d.e. When S[d] > 0,
+it stores d.s, otherwise it stores -d.v-1
+
+So, starting with a vertex ID v, we can access a dart d=D[v]. Then if we iterate d=d.s, we swing around v and visit in
+a clockwise order all the darts that start at v.
+
+#### 5. Non-Manifold vertices
+
+Detect non-manifold vertices of the closure of iS and decides whether they are bounding in a single face.
+
+#### 6. test clockwise order of three vectors
+
+Given a sorted list of three vectors, (U,V,W) establishes whether their orientations are sorted clockwise.
+
+#### 7. InsertInSwingRing
+
+Given a vertex v and a dart d such that d.v == v, insert dart d in the swing ring of v in the right place, 
+so as to respect the clockwise ordering.
+
+#### 8.Comput the D&S array
+
+Initialize the swing rings heads D[v] to point to themselves: D[v]=-v-1; Insert the darts into the appropriate 
+swingRings. 

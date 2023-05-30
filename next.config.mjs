@@ -27,7 +27,8 @@ const withNextra = nextra({
     themeConfig: './theme.config.tsx',
     mdxOptions: {
         rehypePrettyCodeOptions,
-    }
+    },
+    latex: true
 })
 
 
