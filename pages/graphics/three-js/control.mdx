@@ -1,10 +1,45 @@
+## Camera
+
+> ![](images/graphics/camera_orientation.png)
+> Source: [Introduction to Cameras](http://learnwebgl.brown37.net/07_cameras/camera_introduction.html)
+
+- Red - u
+- Green - v (**up**)
+- Blue - n
+
+> Specify the location of the camera
+
+> Specify a location the camera is looking at. This value can be any point that is in front of the camera along 
+it's line-of-sight. It's exact location along the line-of-sight does not matter. 
+This point defines the direction of the **-n** axis 
+
+> Specify the general direction of “up” for the camera. The cross product of this vector and the negation of the 
+line-of-sight vector will produce the u axis of the camera's coordinate system.
+
+
+### Perspective Camera
+
+> ![](images/graphics/perspective-camera.png)
+> Source: [Introduction to Cameras](http://learnwebgl.brown37.net/08_projections/projections_perspective.html)
+
 ### OrbitControls
 
 https://threejs.org/docs/#examples/en/controls/OrbitControls
 
-----
-
+import FullscreenThreejs from 'components/fullscreenThreejs'
 import OrbitControlsExample from 'threejs/orbit-controls'
-import ThreejsEntry from 'components/threejsEntry'
 
-<ThreejsEntry render={OrbitControlsExample}/>
+<FullscreenThreejs render={OrbitControlsExample}/>
+
+### TrackballControls
+
+https://threejs.org/docs/#examples/en/controls/TrackballControls
+
+import TrackballControlsExample from 'threejs/trackball-controls'
+
+<FullscreenThreejs render={TrackballControlsExample}/>
+
+### Difference between Orbit and Trackball Control
+
+TrackballControls is similar to OrbitControls. However, it does not maintain a constant camera up vector. 
+That means if the camera orbits over the “north” and “south” poles, it does not flip.

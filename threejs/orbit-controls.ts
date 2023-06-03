@@ -13,9 +13,10 @@ export default function OrbitControlsExample(mountRef: MutableRefObject<HTMLDivE
         renderer = new WebGLRenderer({
             antialias: true 
         });
-        renderer.setSize(mountRef.current.clientWidth, 600);
+        renderer.setSize(mountRef.current.clientWidth, 800);
         camera = new PerspectiveCamera(60, mountRef.current.clientWidth / 600, 1, 1000);
         camera.position.set(400, 200, 0);
+        camera.lookAt(0, 0, 0);
         // controls
         controls = new OrbitControls(camera, renderer.domElement);
         controls.listenToKeyEvents(mountRef.current); // optional
@@ -24,7 +25,7 @@ export default function OrbitControlsExample(mountRef: MutableRefObject<HTMLDivE
         controls.screenSpacePanning = false;
         controls.minDistance = 100;
         controls.maxDistance = 500;
-        controls.maxPolarAngle = Math.PI / 2;
+        controls.maxPolarAngle = Math.PI;
         // world
         const geometry = new CapsuleGeometry(5, 10, 10, 20);
         const material = new MeshPhongMaterial({
@@ -39,6 +40,13 @@ export default function OrbitControlsExample(mountRef: MutableRefObject<HTMLDivE
             mesh.matrixAutoUpdate = false;
             scene.add(mesh);
         }
+        const mesh = new Mesh(new CylinderGeometry( 0, 10, 30, 4, 1 ), material);
+        mesh.position.x = 0;
+        mesh.position.y = 0;
+        mesh.position.z = 0;
+        mesh.updateMatrix();
+        mesh.matrixAutoUpdate = false;
+        scene.add(mesh);
         // lights
         const dirLight1 = new DirectionalLight(0xffffff);
         dirLight1.position.set(1, 1, 1);

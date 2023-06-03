@@ -17,5 +17,5 @@ export default function ThreejsEntry(props: ThreejsEntryProps) {
         }
     }, []);
 
-    return <div ref={mountRef}></div>
+    return <div style={{width: '100%'}} ref={mountRef}></div>
 }
