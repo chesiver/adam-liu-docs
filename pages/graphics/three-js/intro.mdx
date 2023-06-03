@@ -1,0 +1,47 @@
+## Embed Three.js into MDX
+
+When I searched about three.js together with react, most web pages directed me to a library...
+https://github.com/pmndrs/react-three-fiber
+
+But honestly I just want to embed a three.js scene into a react component. So this works better for me
+https://javascript.plainenglish.io/three-js-with-react-functional-component-9e66e08dbeac
+
+But code in the above link was written without types. So I ended up creating a common component as following:
+
+```typescript
+interface ThreejsEntryProps {
+    render: (mountRef: MutableRefObject<HTMLDivElement>) => WebGLRenderer;
+}
+
+export default function ThreejsEntry(props: ThreejsEntryProps) {
+
+    const mountRef = useRef<HTMLDivElement>({} as HTMLDivElement);
+
+    useEffect(() => {
+        const renderer = props.render(mountRef);
+        mountRef.current.appendChild(renderer.domElement);
+        return () => {
+            mountRef.current?.removeChild(renderer.domElement);
+        }
+    }, []);
+
+    return <div ref={mountRef}></div>
+}
+```
+
+The render function shoud be passed as a prop. Take a parent ref to a div for setting width and returns a 
+**WebGLRenderer** object
+
+```typescript
+export default function Basic(mountRef: MutableRefObject<HTMLDivElement>) {
+    scene = new Scene();
+    /**.... */
+    renderer = new WebGLRenderer({});
+    renderer.setSize(mountRef.current.clientWidth, 600); 
+    // In this nextra component, if we add a div to mdx, the width is default to be 100%, the height is auto
+    // So the div has a non-zero clientWidth, but the div's height shoud be set to better fixed value. 
+    /**.... */
+    return renderer;
+}
+
+```

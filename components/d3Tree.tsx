@@ -66,7 +66,8 @@ export default function D3Tree() {
         try {
             const parseTree = GetParserTree(text);
             setParseTree(parseTree);
-        } catch (err) {
+        }
+        catch (err) {
             // ignore
         }
     }

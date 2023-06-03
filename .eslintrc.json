@@ -14,10 +14,11 @@
         "@typescript-eslint"
     ],
     "rules": {
-        "indent": ["error", 4]
-        
+        "indent": ["error", 4],
+        "brace-style": ["error", "stroustrup"]
     },
     "ignorePatterns": [
+        "threejs/**/*.js",
         "src/**/*.test.ts",
         "src/frontend/generated/*",
         "next.config.mjs"

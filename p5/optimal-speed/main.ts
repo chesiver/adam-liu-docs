@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import type P5 from 'p5'
 
 import { Base, Point } from '../common'
@@ -16,7 +15,8 @@ let lapTime = 0;
 let timing = '';
 let ms = 0, me = 0;
 
-function init(p5) {
+function setup(p5: P5, parentRef: Element) {
+    p5.createCanvas(parentRef.clientWidth, 800).parent(parentRef);
     Base.setP5(p5);
     p5.frameRate(30);
     const str =
@@ -119,7 +119,7 @@ function keyPressed(p5: P5) {
 }
 
 export {
-    init,
+    setup,
     draw,
     keyPressed,
     mousePressed,

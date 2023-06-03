@@ -1,6 +1,6 @@
 {
   "index": "Introduction",
-  "p5-js": "Graphics - P5.js",
+  "graphics": "Graphics",
   "study-compiler": "Study Compiler",
   "network-io": "Network I/O",
   "golang": "Golang",

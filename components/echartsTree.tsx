@@ -79,7 +79,8 @@ export default function EchartsTree() {
             setOptions(updatedOptions)
             setShow(true);
             console.log('set show to be true')
-        } catch (err) {
+        }
+        catch (err) {
             // ignore
         }
     }
