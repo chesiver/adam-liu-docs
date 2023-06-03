@@ -22,6 +22,8 @@ line-of-sight vector will produce the u axis of the camera's coordinate system.
 > ![](images/graphics/perspective-camera.png)
 > Source: [Introduction to Cameras](http://learnwebgl.brown37.net/08_projections/projections_perspective.html)
 
+## Control
+
 ### OrbitControls
 
 https://threejs.org/docs/#examples/en/controls/OrbitControls
@@ -41,5 +43,7 @@ import TrackballControlsExample from 'threejs/trackball-controls'
 
 ### Difference between Orbit and Trackball Control
 
-TrackballControls is similar to OrbitControls. However, it does not maintain a constant camera up vector. 
-That means if the camera orbits over the “north” and “south” poles, it does not flip.
+TrackballControls is similar to OrbitControls. However, it does not maintain a constant camera **up vector**.
+
+That means if the camera orbits over the “north” and “south” poles, it does not **flip**. This is why 
+https://threejs.org/docs/#examples/en/controls/OrbitControls.maxPolarAngle 's Range is 0 to Math.PI radians.
