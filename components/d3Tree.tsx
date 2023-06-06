@@ -41,18 +41,16 @@ const CenteredTree = ({ data }) => {
     );
 
     return (
-        <div ref={treeContainerRef} style={{ width: '60em', height: '40em', borderStyle: 'solid', borderWidth: '3px'}}>
+        <div ref={treeContainerRef} style={{ width: '60em', height: '40em', borderStyle: 'solid', borderWidth: '3px' }}>
             <Tree
                 data={data}
                 translate={treeTranslate}
-                nodeSize={{x: 250, y: 200}}
+                nodeSize={{ x: 250, y: 200 }}
                 renderCustomNodeElement={renderRectSvgNode}
             />
         </div>
     )
 }
-
-
 
 export default function D3Tree() {
     const initText =   
@@ -73,7 +71,7 @@ export default function D3Tree() {
     }
     return (
         <div>
-            <div style={{borderStyle: 'solid', borderWidth: '3px'}}>
+            <div style={{ borderStyle: 'solid', borderWidth: '3px' }}>
                 <CodeMirror
                     value={initText}
                     height="200px"

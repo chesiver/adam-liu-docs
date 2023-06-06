@@ -28,8 +28,24 @@ const withNextra = nextra({
     mdxOptions: {
         rehypePrettyCodeOptions,
     },
-    latex: true
+    latex: true,
 })
 
+const config = withNextra();
+const prevWebpack = config.webpack;
+config.webpack = (
+    config, context
+) => {
+    const realConfig = prevWebpack(config, context);
+    realConfig.module.rules.push({
+        test: /\.(glsl|vs|fs|vert|frag)$/i,
+        use: [
+            'raw-loader',
+            'glslify-loader'
+          ]
+      });
+    // Important: return the modified config
+    return realConfig;
+};
 
-export default withNextra()
+export default config

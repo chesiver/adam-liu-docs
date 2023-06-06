@@ -85,7 +85,7 @@ export default function EchartsTree() {
         }
     }
 
-    return <div style={{display: 'flex', 'flexDirection': 'column'}}>
+    return <div style={{ display: 'flex', 'flexDirection': 'column' }}>
         <div>
             <CodeMirror
                 value={initText}

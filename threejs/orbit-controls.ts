@@ -3,9 +3,7 @@ import { AmbientLight, CapsuleGeometry, Color, CylinderGeometry, DirectionalLigh
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 export default function OrbitControlsExample(mountRef: MutableRefObject<HTMLDivElement>) {
-
     let camera, controls: OrbitControls, scene, renderer: WebGLRenderer = new WebGLRenderer();
-
     function init() {
         scene = new Scene();
         scene.background = new Color(0xcccccc);
@@ -40,7 +38,7 @@ export default function OrbitControlsExample(mountRef: MutableRefObject<HTMLDivE
             mesh.matrixAutoUpdate = false;
             scene.add(mesh);
         }
-        const mesh = new Mesh(new CylinderGeometry( 0, 10, 30, 4, 1 ), material);
+        const mesh = new Mesh(new CylinderGeometry(0, 10, 30, 4, 1), material);
         mesh.position.x = 0;
         mesh.position.y = 0;
         mesh.position.z = 0;
@@ -57,20 +55,16 @@ export default function OrbitControlsExample(mountRef: MutableRefObject<HTMLDivE
         const ambientLight = new AmbientLight(0x222222);
         scene.add(ambientLight);
     }
-
     function animate() {
         requestAnimationFrame(animate);
         controls.update();
         render();
     }
-
     function render() {
         renderer.render(scene, camera);
     }
-
     init();
     // render(); // remove when using next line for animation loop (requestAnimationFrame)
     animate();
-    
     return renderer;
 }

@@ -1,0 +1,56 @@
+## Lights
+
+### Directional Lights
+
+> A light that gets emitted in a specific direction
+> This light will behave as though it is infinitely far away and the rays produced from it are all parallel
+> This light can cast shadows
+
+### Hemisphere Lights
+
+> A light source positioned directly above the scene, with color fading from the sky color to the ground color.
+> This light cannot be used to cast shadows.
+
+
+### Comparison
+
+import FullscreenThreejs from 'components/fullscreenThreejs'
+import HemisphereLightExample from 'threejs/hemisphere-light'
+    
+<FullscreenThreejs render={HemisphereLightExample}/>
+
+### Physical Lights
+
+https://threejs.org/docs/#api/en/geometries/SphereGeometry
+
+https://threejs.org/docs/#api/en/lights/PointLight
+
+https://threejs.org/docs/#api/en/materials/MeshStandardMaterial
+
+https://threejs.org/docs/#api/en/geometries/PlaneGeometry
+
+https://learnopengl.com/PBR/Theory
+
+#### Roughness
+> All the PBR techniques are based on the theory of microfacets. The theory describes that any surface at a microscopic 
+scale can be described by tiny little perfectly reflective mirrors called microfacets. Depending on the roughness of a surface, 
+the alignment of these tiny little mirrors can differ quite a lot
+
+> The rougher a surface is, the more chaotically aligned each microfacet will be along the surface. 
+The effect of these tiny-like mirror alignments is, that when specifically talking about specular lighting/reflection, 
+the incoming light rays are more likely to scatter along completely different directions on rougher surfaces, 
+resulting in a more widespread specular reflection. In contrast, on a smooth surface the light rays are more likely to 
+reflect in roughly the same direction, giving us smaller and sharper reflections
+ 
+#### Metalness
+
+> Theoretically, the metalness of a material is binary: it's either a metal or it isn't; it can't be both. 
+However, most render pipelines allow configuring the metalness of a surface linearly between 0.0 and 1.0. 
+This is mostly because of the lack of material texture precision. For instance, a surface having 
+small (non-metal) dust/sand-like particles/scratches over a metallic surface is difficult to 
+render with binary metalness values.
+
+
+import PhysicalLightExample from 'threejs/physical-light'
+
+<FullscreenThreejs render={PhysicalLightExample}/>
