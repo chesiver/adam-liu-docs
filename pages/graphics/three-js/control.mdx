@@ -1,6 +1,6 @@
 ## Camera
 
-> ![](images/graphics/camera_orientation.png)
+> ![Camera Orientation](images/graphics/camera_orientation.png)
 > Source: [Introduction to Cameras](http://learnwebgl.brown37.net/07_cameras/camera_introduction.html)
 
 - Red - u
@@ -19,7 +19,7 @@ line-of-sight vector will produce the u axis of the camera's coordinate system.
 
 ### Perspective Camera
 
-> ![](images/graphics/perspective-camera.png)
+> ![Perspective Camera](images/graphics/perspective-camera.png)
 > Source: [Introduction to Cameras](http://learnwebgl.brown37.net/08_projections/projections_perspective.html)
 
 ## Control
@@ -47,3 +47,37 @@ TrackballControls is similar to OrbitControls. However, it does not maintain a c
 
 That means if the camera orbits over the “north” and “south” poles, it does not **flip**. This is why 
 https://threejs.org/docs/#examples/en/controls/OrbitControls.maxPolarAngle 's Range is 0 to Math.PI radians.
+
+
+### PointLockControls
+
+https://threejs.org/docs/#examples/en/controls/PointerLockControls
+
+> PointerLockControls is a perfect choice for first person 3D games
+
+#### Ray Tracing
+In this example, to detect if the first person stands on a box, https://threejs.org/docs/#api/en/core/Raycaster
+is used.
+
+```typescript
+raycaster = new Raycaster(new Vector3(), new Vector3(0, -1, 0), 0, 10); // a ray points to -y (downward)
+```
+
+```typescript
+raycaster.ray.origin.copy(controls.getObject().position);
+raycaster.ray.origin.y -= 10;
+const intersections = raycaster.intersectObjects(objects, false);
+const onObject = intersections.length > 0;
+```
+
+#### Indexed Geometry vs Non-indexed Geometry
+
+Non-indexed geometry presents every vertex for every triangle. If a triangle shares one or more vertices, 
+then that vertex is repeated, even if they share the same location and attributes.
+
+For large models, there may be a significant percentage of shared vertices, and thus non-indexed geometry can be wasteful. 
+Indexed geometry addresses this by keeping the positions and the topology separate.
+
+import PointlockControlsExample from 'threejs/pointlock-controls'
+
+<FullscreenThreejs render={PointlockControlsExample}/>
