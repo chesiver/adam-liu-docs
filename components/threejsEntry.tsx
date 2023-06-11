@@ -1,45 +1,28 @@
-import { MutableRefObject, useEffect, useRef } from 'react';
+import { Card } from '@mui/material';
+import { Dispatch, MutableRefObject, SetStateAction, useEffect, useRef, useState } from 'react';
 import { WebGLRenderer } from 'three';
 
 interface ThreejsEntryProps {
-    render: (mountRef: MutableRefObject<HTMLDivElement>) => WebGLRenderer;
+    render: (mountRef: MutableRefObject<HTMLDivElement>, setInfo?: Dispatch<SetStateAction<string>>) => Promise<WebGLRenderer> | WebGLRenderer;
 }
 
 export default function ThreejsEntry(props: ThreejsEntryProps) {
 
     const mountRef = useRef<HTMLDivElement>({} as HTMLDivElement);
+    const [info, setInfo] = useState('');
 
     useEffect(() => {
-        const renderer = props.render(mountRef);
-        mountRef.current.appendChild(renderer.domElement);
+        let renderer;
+        (async () => {
+            renderer = await props.render(mountRef, setInfo);
+            mountRef.current.appendChild(renderer.domElement);
+        })();
         return () => {
-            mountRef.current?.removeChild(renderer.domElement);
+            mountRef.current?.removeChild(renderer?.domElement);
         }
     }, []);
 
     return <div tabIndex={0} style={{ width: '100%' }} ref={mountRef}>
-        {/* <div id="blocker" style={{ 
-            position: "absolute", width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.5)" 
-        }}>
-            <div id="instructions" style={{ 
-                width: '100%', height: "100%", 
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                textAlign: "center",
-                fontSize: "14px",
-                cursor: "pointer",
-            }}>
-                <p style={{ fontSize: "36px" }}>
-					Click to play
-                </p>
-                <p>
-					Move: WASD<br/>
-					Jump: SPACE<br/>
-					Look: MOUSE
-                </p>
-            </div>
-        </div> */}
+        <Card variant='outlined' sx={{ position: 'absolute', color: 'black', left: '5px', userSelect: 'none' }}>{info}</Card>
     </div>
 }

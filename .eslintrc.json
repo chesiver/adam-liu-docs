@@ -25,6 +25,7 @@
         "space-unary-ops": [2, {"words": true, "nonwords": false}]
     },
     "ignorePatterns": [
+        "public/**/*.js",
         "threejs/**/*.js",
         "src/**/*.test.ts",
         "src/frontend/generated/*",

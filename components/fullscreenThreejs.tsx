@@ -2,17 +2,14 @@ import { Button, Modal } from "@mui/material";
 import ThreejsEntry from "./threejsEntry";
 import { MutableRefObject, useState } from "react";
 import { WebGLRenderer } from "three";
-interface FullscreenThreejsProps {
-    render: (mountRef: MutableRefObject<HTMLDivElement>) => WebGLRenderer;
-}
 
-export function getServerSideProps () {
-    return { extra: { msg: 'hello world' } }
+interface FullscreenThreejsProps {
+    render: (mountRef: MutableRefObject<HTMLDivElement>) => Promise<WebGLRenderer> | WebGLRenderer;
 }
 
 export default function FullscreenThreejs(props: FullscreenThreejsProps) {
     const [show, setShow] = useState(false);
-    
+
     return (
         <div>
             <Button variant="contained" onClick={() => setShow(!show)}>Show Example</Button>

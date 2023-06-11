@@ -37,13 +37,21 @@ config.webpack = (
     config, context
 ) => {
     const realConfig = prevWebpack(config, context);
+    realConfig.resolve = {
+        ...realConfig.resolve,
+        fallback: {
+            "fs": false,
+            "path": false,
+            "os": false,
+        }
+    };
     realConfig.module.rules.push({
         test: /\.(glsl|vs|fs|vert|frag)$/i,
         use: [
             'raw-loader',
             'glslify-loader'
-          ]
-      });
+        ]
+    });
     // Important: return the modified config
     return realConfig;
 };
