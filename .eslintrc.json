@@ -29,6 +29,7 @@
         "threejs/**/*.js",
         "src/**/*.test.ts",
         "src/frontend/generated/*",
-        "next.config.mjs"
+        "next.config.mjs",
+        "antlr/parser/**"
     ]
 }

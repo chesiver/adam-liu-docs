@@ -17,5 +17,8 @@
     "strictNullChecks": true
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "antlr/*.js"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "antlr/parser/JavaScriptLexer.ts"
+  ]
 }
