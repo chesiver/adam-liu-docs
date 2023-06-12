@@ -1,0 +1,42 @@
+## Cloth
+
+### Coomunication Between Three.js && Ammo.js
+
+Because three.js and ammo.js each stores points' positions separately, we must sync them manually. Take Cloth
+object for example.
+
+1. Bind physical body to three.js userData
+```typescript
+// create clothSoftBody.
+// .... clothSoftBody = ...
+cloth.userData.physicsBody = clothSoftBody;
+```
+
+2. Inside render function, sync physical body's position to three.js geometry position
+```typescript
+// Update cloth
+const softBody = cloth.userData.physicsBody;
+const clothPositions = cloth.geometry.attributes.position.array as number[];
+const numVerts = clothPositions.length / 3;
+const nodes = softBody.get_m_nodes();
+let indexFloat = 0;
+for (let i = 0; i < numVerts; i++) {
+    const node = nodes.at(i);
+    const nodePos = node.get_m_x();
+    clothPositions[indexFloat++] = nodePos.x();
+    clothPositions[indexFloat++] = nodePos.y();
+    clothPositions[indexFloat++] = nodePos.z();
+}
+```
+
+3. Reset needsUpdate flag to inform three.js
+```typescript
+cloth.geometry.computeVertexNormals();
+cloth.geometry.attributes.position.needsUpdate = true;
+cloth.geometry.attributes.normal.needsUpdate = true;
+```
+
+import FullscreenThreejs from 'components/fullscreenThreejs'
+import AmmoClothExample from 'threejs/ammo-cloth'
+
+<FullscreenThreejs render={AmmoClothExample} loadAmmo={true}/>

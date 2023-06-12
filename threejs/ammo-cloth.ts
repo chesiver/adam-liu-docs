@@ -307,7 +307,6 @@ export default async function AmmoClothExample(mountRef: MutableRefObject<HTMLDi
         const numVerts = clothPositions.length / 3;
         const nodes = softBody.get_m_nodes();
         let indexFloat = 0;
-
         for (let i = 0; i < numVerts; i++) {
             const node = nodes.at(i);
             const nodePos = node.get_m_x();

@@ -1,5 +1,6 @@
 {
     "intro": "Intro",
     "control": "Control",
-    "lights": "Lights"
+    "lights": "Lights",
+    "physical-simulation": "Physical Simulation"
 }

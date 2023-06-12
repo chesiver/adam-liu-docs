@@ -1,6 +1,5 @@
 {
     "three-js": "Three.js",
-    "physical-simulation": "Physical Simulation",
     "p5-js": {
         "display": "hidden"
     }
