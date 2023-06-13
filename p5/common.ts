@@ -54,7 +54,7 @@ function MoveByDistanceTowards(p: Point, d: number, q: Point) {
     return new Point({
         p: p, 
         c: d, 
-        v: Unit(new Vector({p: p, q: q})),
+        v: Unit(new Vector({ p: p, q: q })),
     });
 }
 
@@ -149,5 +149,4 @@ export {
     Sum,
     MoveByDistanceTowards,
 };
-
 

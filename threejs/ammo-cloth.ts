@@ -138,8 +138,7 @@ export default async function AmmoClothExample(mountRef: MutableRefObject<HTMLDi
                 brick.receiveShadow = true;
                 if (oddRow && (i == 0 || i == nRow - 2)) {
                     pos.z += 0.75 * brickLength;
-                }
-                else {
+                } else {
                     pos.z += brickLength;
                 }
             }

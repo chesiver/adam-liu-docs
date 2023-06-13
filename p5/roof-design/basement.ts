@@ -11,7 +11,7 @@ class Basement extends Base {
     }
 
     addPoints(x: number, y: number) {
-        this.pointsVector.push(new Point({x, y}));
+        this.pointsVector.push(new Point({ x, y }));
     }
     
     loadPts(input: string) {

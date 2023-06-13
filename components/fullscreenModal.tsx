@@ -26,7 +26,9 @@ export default function FullscreenModal({ content, show, setShow }: IFullscreenM
         <div>
             <Modal
                 open={show}
-                onClose={() => setShow(false)}
+                onClose={() => {
+                    return setShow(false)
+                }}
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
             >

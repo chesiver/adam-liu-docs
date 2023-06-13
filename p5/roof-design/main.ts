@@ -60,12 +60,12 @@ function draw(p5: P5) {
         // p5.rotateX(PI / 2); // rotates frame around X to make X and Y basis vectors parallel to the floor
         p5.noStroke();
         p5.color('grey');
-        p5.push(); p5.translate(0, 0, - w / 2 - 1.5); p5.box(w, w, 1); p5.pop(); // draws floor as thin plate
+        p5.push(); p5.translate(0, 0, -w / 2 - 1.5); p5.box(w, w, 1); p5.pop(); // draws floor as thin plate
         p5.noFill(); p5.strokeWeight(1); p5.stroke('black'); showBlock(p5, w, w, w, 0, 0, 0 ,0);
         p5.noStroke();
         p5.push();
         {
-            p5.translate(-width / 2, -height / 2, - w / 2 - 0.5);
+            p5.translate(-width / 2, -height / 2, -w / 2 - 0.5);
             basement.drawPoints();
         }
         p5.pop();

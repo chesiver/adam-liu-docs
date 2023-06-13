@@ -12,10 +12,14 @@ export default function FullscreenThreejs(props: FullscreenThreejsProps) {
 
     return (
         <div>
-            <Button variant="contained" onClick={() => setShow(!show)}>Show Example</Button>
+            <Button variant="contained" onClick={() => {
+                return setShow(!show)
+            }}>Show Example</Button>
             <Modal
                 open={show}
-                onClose={() => setShow(false)}
+                onClose={() => {
+                    return setShow(false)
+                }}
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
             >

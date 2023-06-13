@@ -1,7 +1,11 @@
 import dynamic from 'next/dynamic'
 
 // Will only import `react-p5` on client-side
-const Sketch = dynamic(() => import('react-p5').then((mod) => mod.default), {
+const Sketch = dynamic(() => {
+    return import('react-p5').then((mod) => {
+        return mod.default
+    })
+}, {
     ssr: false,
 })
 

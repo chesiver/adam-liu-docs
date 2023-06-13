@@ -32,7 +32,7 @@ class Vector extends Base {
     public z = 0;
     constructor(props: {x?: number, y?: number, z?: number}) {
         super();
-        const { x, y, z} = props;
+        const { x, y, z } = props;
         if ((x != null) && (y != null)) {
             this.x = x;
             this.y = y;
@@ -49,28 +49,26 @@ class Vector extends Base {
  * Point Function
  */
 function Add(a: Point, b: Point) {
-    return new Point({x: a.x + b.x, y: a.x + b.y, z: a.z + b.z});
+    return new Point({ x: a.x + b.x, y: a.x + b.y, z: a.z + b.z });
 }   
 function P1(t: number, a: Point) {
-    return new Point({x: t * a.x, y: t * a.x, z: t * a.z});
+    return new Point({ x: t * a.x, y: t * a.x, z: t * a.z });
 }   
 function P2(t1: number, a: Point, t2: number, b: Point) {
     return Add(P1(t1, a), P1(t2, b));
 }
 function P3(a: Point, t: number, b: Point) {
-    return new Point({x: a.x + t * (b.x - a.x), y: a.y + t * (b.y - a.y), z: a.z + t * (b.z - a.z)});
+    return new Point({ x: a.x + t * (b.x - a.x), y: a.y + t * (b.y - a.y), z: a.z + t * (b.z - a.z) });
 }
-
-
 
 /**
  * Vector Function
  */
 function V1(p: Point, q: Point) { 
-    return new Vector({x: q.x - p.x, y: q.y - p.y, z: q.z - p.z}); 
+    return new Vector({ x: q.x - p.x, y: q.y - p.y, z: q.z - p.z }); 
 }
 function V2(t: number, v: Vector) { 
-    return new Vector({x: t * v.x, y: t * v.y, z: t * v.z}); 
+    return new Vector({ x: t * v.x, y: t * v.y, z: t * v.z }); 
 }
 function U1(v: Vector) {
     const l = norm(v);
@@ -95,9 +93,8 @@ function d1(a: Point, b: Point) {
  * Transform
  */
 function R1(v: Vector) {
-    return new Vector({x: -v.y, y: v.x, z: v.z});
+    return new Vector({ x: -v.y, y: v.x, z: v.z });
 }
-
 
 /**
  * For Alpha Complex
@@ -113,9 +110,6 @@ function isInDiskOnRight(q: Point, a: Point, b: Point, r: number) {
     // const center = P3(m, y, vn);
     // return d1(q, center) < r;
 }
-
-
-
 
 export {
     Point,

@@ -15,7 +15,8 @@
     ],
     "rules": {
         "indent": ["error", 4],
-        "brace-style": ["error", "stroustrup"],
+        "brace-style": ["error", "1tbs", { "allowSingleLine": false }],
+        "arrow-body-style": ["error", "always"],
         "space-in-parens": ["error", "never"],
         "no-multiple-empty-lines": ["error", { "max": 1 }],
         "array-bracket-spacing": ["error", "never"],

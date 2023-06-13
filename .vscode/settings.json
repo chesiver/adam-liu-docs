@@ -3,5 +3,6 @@
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": true
     },
-    "editor.detectIndentation": false
+    "editor.detectIndentation": false,
+    "java.project.sourcePaths": []
 }

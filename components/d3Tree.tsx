@@ -5,7 +5,9 @@ import { javascript } from '@codemirror/lang-javascript';
 
 import GetParserTree from '../antlr/parse'
 
-const Tree = dynamic(() => import('react-d3-tree'), {
+const Tree = dynamic(() => {
+    return import('react-d3-tree')
+}, {
     ssr: false,
 });
 
@@ -26,19 +28,21 @@ const CenteredTree = ({ data }) => {
         }
     });
 
-    const renderRectSvgNode = ({ nodeDatum, toggleNode }) => (
-        <g>
-            <rect width="20" height="20" x="-10" onClick={toggleNode} />
-            <text fill="black" strokeWidth="1" x="20">
-                {nodeDatum.name}
-            </text>
-            {nodeDatum.attributes?.text && (
-                <text fill="black" x="20" dy="20" strokeWidth="1">
-                    {nodeDatum.attributes?.text}
+    const renderRectSvgNode = ({ nodeDatum, toggleNode }) => {
+        return (
+            <g>
+                <rect width="20" height="20" x="-10" onClick={toggleNode} />
+                <text fill="black" strokeWidth="1" x="20">
+                    {nodeDatum.name}
                 </text>
-            )}
-        </g>
-    );
+                {nodeDatum.attributes?.text && (
+                    <text fill="black" x="20" dy="20" strokeWidth="1">
+                        {nodeDatum.attributes?.text}
+                    </text>
+                )}
+            </g>
+        )
+    };
 
     return (
         <div ref={treeContainerRef} style={{ width: '60em', height: '40em', borderStyle: 'solid', borderWidth: '3px' }}>
@@ -64,8 +68,7 @@ export default function D3Tree() {
         try {
             const parseTree = GetParserTree(text);
             setParseTree(parseTree);
-        }
-        catch (err) {
+        } catch (err) {
             // ignore
         }
     }

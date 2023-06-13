@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "eslint --fix --ext .ts,.tsx ."
   },
   "repository": {
     "type": "git",
@@ -37,7 +38,7 @@
     "three": "^0.153.0"
   },
   "devDependencies": {
-    "@types/node": "18.11.10",
+    "@types/node": "^18.11.10",
     "@typescript-eslint/eslint-plugin": "^5.59.6",
     "@typescript-eslint/parser": "^5.59.6",
     "eslint": "^8.41.0",

@@ -1,6 +1,6 @@
 import antlr4, { CharStream } from 'antlr4';
 import JavaScriptLexer from './parser/JavaScriptLexer';
-import JavaScriptParser, { EosContext, IdentifierContext, LiteralContext, LiteralExpressionContext, SourceElementContext, VarModifierContext } from './parser/JavaScriptParser';
+import JavaScriptParser, { AnonymousFunctionDeclContext, EosContext, FunctionExpressionContext, IdentifierContext, LiteralContext, LiteralExpressionContext, SourceElementContext, VarModifierContext } from './parser/JavaScriptParser';
 import JavaScriptParserVisitor from './parser/JavaScriptParserVisitor';
 
 interface Result {
@@ -25,8 +25,7 @@ class Visitor extends JavaScriptParserVisitor<Result | null> {
             node.children = ctx.children.map(child => {
                 if (child.children && child.children.length != 0) {
                     return child.accept(this);
-                }
-                else {
+                } else {
                     const text = child.getText();
                     return {
                         name,
@@ -74,6 +73,18 @@ class Visitor extends JavaScriptParserVisitor<Result | null> {
         return {
             name: 'LiteralExpression',
             text: ctx.literal().getText(),
+        }
+    }
+
+    visitAnonymousFunctionDecl = (ctx: AnonymousFunctionDeclContext) => {
+        const params = ctx.formalParameterList()?.accept(this) || {
+            name: 'ParameterList',
+            text: 'empty',
+        };
+        const body  = ctx.functionBody().accept(this);
+        return {
+            name: 'AnonymousFunction',
+            children: [params, body],
         }
     }
 

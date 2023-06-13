@@ -193,8 +193,12 @@ class Points extends Base {
         targetPts.pointsVector = r;
     }
 
-    prev(i) { if (i == 0) return this.pointsVector.length - 1; else return i - 1; } // index of prev point
-    next(i) { if (i == this.pointsVector.length - 1) return 0; else return i + 1; } // index of next point
+    prev(i) {
+        if (i == 0) return this.pointsVector.length - 1; else return i - 1; 
+    } // index of prev point
+    next(i) {
+        if (i == this.pointsVector.length - 1) return 0; else return i + 1; 
+    } // index of next point
 
     loadPoints(strs) {
         this.clear();
