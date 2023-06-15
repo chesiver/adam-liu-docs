@@ -59,3 +59,36 @@ then only a pointer will be assignable to the interface — a value won't be val
 > Calling value receiver methods through interfaces always creates extra copies of your values.
 
 [Example](https://go.dev/play/p/RzQMOMW-1I3)
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+type A struct {
+	Val int
+}
+
+func (a *A) TestMethod1() {
+	fmt.Println("TestMethod1")
+}
+
+func (a A) TestMethod2() {
+	fmt.Println("TestMethod2")
+	fmt.Println("Address in method: " + fmt.Sprintf("%p", &a.Val))
+}
+
+type I interface {
+	TestMethod2()
+}
+
+func main() {
+	a := &A{Val: 1}
+	fmt.Println("Address before method: " + fmt.Sprintf("%p", &a.Val))
+	var b I = a
+	b.TestMethod2()
+}
+
+```

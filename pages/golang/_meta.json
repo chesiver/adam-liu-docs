@@ -1,5 +1,6 @@
 {
     "types-generics": "Types & Generics",
-    "unit-test": "Unit Test",
-    "method-declaration": "Method Declaration"
+    "method-declaration": "Method Declaration",
+    "embedding": "Embedding",
+    "unit-test": "Unit Test"
 }
