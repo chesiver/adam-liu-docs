@@ -50,6 +50,49 @@ If you have an interface I, and some or all of the methods in I's method set are
 (with the remainder being provided by methods with a receiver of T), then ***T satisfies the interface I, but T doesn't**. 
 That is because *T's method set includes T's, but not the other way around (back to the first point again).
 
+[Example](https://go.dev/play/p/cScTYeTQo-c)
+```go
+package main
+
+import (
+	"fmt"
+)
+
+type A struct{}
+
+func (a A) TestMethod1() {
+	fmt.Println("TestMethod1")
+}
+
+func (a *A) TestMethod2() {
+	fmt.Println("TestMethod2")
+}
+
+type B struct {
+	A
+}
+
+type C struct {
+	*A
+}
+
+type D interface {
+	TestMethod1()
+	TestMethod2()
+}
+
+func main() {
+	b, c := B{A{}}, C{&A{}}
+	b.TestMethod1()
+	b.TestMethod2() // This actually works. But it is a shorthand for(&b.A).TestMethod2()
+	c.TestMethod1()
+	c.TestMethod2()
+	// var d1 D = b // This does't work.
+	var d2 D = c
+	fmt.Println(d2)
+}
+```
+
 You can mix and match methods with value receivers and methods with pointer receivers, and use them with variables containing values and pointers, 
 without worrying about which is which. Both will work, and the syntax is the same. However, if methods with pointer receivers are needed to satisfy an interface, 
 then only a pointer will be assignable to the interface — a value won't be valid

@@ -92,7 +92,10 @@ type C struct {
 func main() {
 	b, c := B{A{}}, C{&A{}}
 	b.TestMethod1()
-	b.TestMethod2() // This actually works. But it is a shorthand for(&b.A).TestMethod2()
+	b.TestMethod2() /** 
+        This actually works. But it is a shorthand for(&b.A).TestMethod2(). 
+        However, B's method set doesn't include TestMethod2
+    */
 	c.TestMethod1()
 	c.TestMethod2()
 }

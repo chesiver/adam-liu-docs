@@ -1,0 +1,5 @@
+{
+    "replication": "Replication",
+    "partition": "Partition",
+    "transaction": "Transaction"
+}
