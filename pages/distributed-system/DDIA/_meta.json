@@ -1,5 +1,6 @@
 {
     "replication": "Replication",
     "partition": "Partition",
-    "transaction": "Transaction"
+    "transaction": "Transaction",
+    "consistency-consensus": "Consistency and Consensus"
 }

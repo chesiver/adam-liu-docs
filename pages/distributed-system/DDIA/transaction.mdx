@@ -137,22 +137,22 @@ ALICE                                   BOB
 
 ┌─ BEGIN TRANSACTION                    ┌─ BEGIN TRANSACTION
 │                                       │
-├─ currently*on*call = (                ├─ currently*on*call = (
+├─ currently_on_call = (                ├─ currently_on_call = (
 │   select count(*) from doctors        │    select count(*) from doctors
-│   where on*call = true                │    where on*call = true
-│   and shift*id = 1234                 │    and shift*id = 1234
+│   where on_call = true                │    where on_call = true
+│   and shift_id = 1234                 │    and shift_id = 1234
 │  )                                    │  )
-│  // now currently*on*call = 2         │  // now currently*on*call = 2
+│  // now currently_on_call = 2         │  // now currently_on_call = 2
 │                                       │
-├─ if (currently*on*call  2) {          │
+├─ if (currently_on_call  2) {          │
 │    update doctors                     │
-│    set on*call = false                │
+│    set on_call = false                │
 │    where name = 'Alice'               │
-│    and shift*id = 1234                ├─ if (currently*on*call >= 2) {
+│    and shift_id = 1234                ├─ if (currently_on_call >= 2) {
 │  }                                    │    update doctors
-│                                       │    set on*call = false
+│                                       │    set on_call = false
 └─ COMMIT TRANSACTION                   │    where name = 'Bob'  
-                                        │    and shift*id = 1234
+                                        │    and shift_id = 1234
                                         │  }
                                         │
                                         └─ COMMIT TRANSACTION
@@ -165,23 +165,24 @@ Write skew can occur if two transactions read the same objects, and then update 
 anomaly.
 
 Ways to prevent write skew are a bit more restricted:
-* Atomic operations don't help as things involve more objects.
-* Automatically prevent write skew requires true serializable isolation.
-* The second-best option in this case is probably to explicitly lock the rows that the transaction depends on.
-  ```sql
-  BEGIN TRANSACTION;
+- Atomic operations don't help as things involve more objects.
+- Automatically prevent write skew requires true serializable isolation.
+- The second-best option in this case is probably to explicitly lock the rows that the transaction depends on.
 
-  SELECT * FROM doctors
-  WHERE on*call = true
-  AND shift*id = 1234 FOR UPDATE;
+```sql
+BEGIN TRANSACTION;
 
-  UPDATE doctors
-  SET on*call = false
-  WHERE name = 'Alice'
-  AND shift*id = 1234;
+SELECT * FROM doctors
+WHERE on_call = true
+AND shift_id = 1234 FOR UPDATE;
 
-  COMMIT;
-  ```
+UPDATE doctors
+SET on_call = false
+WHERE name = 'Alice'
+AND shift_id = 1234;
+
+COMMIT;
+```
 
 ### Serializability
 
@@ -242,7 +243,8 @@ Blocking readers and writers is implemented by a having lock on each object in t
 
 It can happen that transaction A is stuck waiting for transaction B to release its lock, and vice versa (*deadlock*).
 
-**The performance for transaction throughput and response time of queries are significantly worse under two-phase locking than under weak isolation.**
+**The performance for transaction throughput and response time of queries are significantly worse under two-phase locking than under 
+weak isolation.**
 
 A transaction may have to wait for several others to complete before it can do anything.
 
