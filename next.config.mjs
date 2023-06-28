@@ -22,11 +22,16 @@ const rehypePrettyCodeOptions = {
     },
 };
 
+import { remarkGraphvizSvg } from 'remark-hpcc-graphviz-svg';
+
 const withNextra = nextra({
     theme: 'nextra-theme-docs',
     themeConfig: './theme.config.tsx',
     mdxOptions: {
         rehypePrettyCodeOptions,
+        remarkPlugins: [
+            remarkGraphvizSvg,
+        ],
     },
     latex: true,
 })

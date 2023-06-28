@@ -1,4 +1,5 @@
 {
+    "storage-retrieval": "Storage and Retrieval",
     "replication": "Replication",
     "partition": "Partition",
     "transaction": "Transaction",

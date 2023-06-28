@@ -29,12 +29,13 @@
     "antlr4": "^4.12.0",
     "echarts-for-react": "^3.0.2",
     "next": "^13.0.6",
-    "nextra": "latest",
-    "nextra-theme-docs": "latest",
+    "nextra": "^2.8.0",
+    "nextra-theme-docs": "^2.8.0",
     "react": "^18.2.0",
     "react-d3-tree": "^3.6.1",
     "react-dom": "^18.2.0",
     "react-p5": "^1.3.35",
+    "remark-hpcc-graphviz-svg": "^0.1.1",
     "three": "^0.153.0"
   },
   "devDependencies": {

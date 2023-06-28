@@ -1,5 +1,6 @@
 {
     "three-js": "Three.js",
+    "graph-visualize": "Graph Visualization",
     "p5-js": {
         "display": "hidden"
     }
