@@ -23,6 +23,7 @@ const rehypePrettyCodeOptions = {
 };
 
 import { remarkGraphvizSvg } from 'remark-hpcc-graphviz-svg';
+import simplePlantUML from '@akebifiky/remark-simple-plantuml';
 
 const withNextra = nextra({
     theme: 'nextra-theme-docs',
@@ -31,6 +32,10 @@ const withNextra = nextra({
         rehypePrettyCodeOptions,
         remarkPlugins: [
             remarkGraphvizSvg,
+            [
+                simplePlantUML,
+                {baseUrl: "https://www.plantuml.com/plantuml/svg"}
+            ]
         ],
     },
     latex: true,

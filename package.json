@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/shuding/nextra-docs-template#readme",
   "dependencies": {
+    "@akebifiky/remark-simple-plantuml": "^1.0.2",
     "@codemirror/lang-javascript": "^6.1.7",
     "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",
