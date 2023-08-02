@@ -1,0 +1,86 @@
+' https://serhatgiydiren.com/system-design-interview-top-k-problem-heavy-hitters/
+
+@startuml top_k_hit
+!include <C4/C4_Component>
+
+HIDE_STEREOTYPE()
+
+title System Design for Top K Hit 
+
+card requirement [
+    System Requirement
+    ----
+    topK(k, startTime, endTime) : We want our system to return a list of k most frequent items.\
+]
+
+System(apiGateway, "API Gateway")
+
+Person(user, "User")
+
+Rel(user, apiGateway, "Click/Submit")
+
+SystemQueue(eventMessaging, "Distributed Messaging System")
+
+Rel(apiGateway, eventMessaging, "hit event")
+
+System_Boundary(fastProcessing, "Fast Processing") {
+    Container_Boundary(count_min_sketch, "Count-min Sketch") {
+        rectangle count_min_input [
+            input: C B A A A
+        ]
+        rectangle count_min_sketch_table [
+            | h1 | 1 | 0 | 1 | <#lightblue> 3 | 0 |
+            | h2 | 0 | 1 | 1 | <#lightblue> 3 | 0 |
+            | h3 | 0 | 0 | 1 | 0 | <#lightblue> 3 |
+            | h4 | 0 | 1 | 0 | <#lightblue> 4 | 0 |
+            | h5 | 0 | 0 | 0 | 0 | <#lightblue> 5 |
+        ]
+        rectangle count_min_minimum_alue [
+            count(A) = min(3, 3, 3, 4, 5) = 3
+        ]
+        Lay_D(count_min_input, count_min_sketch_table)
+        note bottom of count_min_minimum_alue
+            The counting will be problematic only if for **every** hash function, 
+            there's some key other than A collides with A.
+            A good replacement for one hash table if the size is too large
+        end note 
+    }
+    Container_Boundary(fastProcessor, "Fast Processor") {
+        rectangle "Fast Processor 1" as fp1
+        rectangle "Fast Processor 2" as fp2
+        rectangle "Fast Processor 3" as fp3
+        rectangle "Merge Sorted Array" as fpmsa
+        Rel(fp1, fpmsa, "merge sort")
+        Rel(fp2, fpmsa, "")
+        Rel(fp3, fpmsa, "")
+    }
+    note bottom of fastProcessor
+        For maximum speed, all fast processing happnens in memory.
+    end note
+
+}
+
+
+System_Boundary(slowProcessing, "Slow Processing") {
+    Container(slowProcessingDataPartitioner, "Data Partitioner", "Aggregate data for each messaging queue's partition")
+    note left of slowProcessingDataPartitioner
+        Accumulates data in memory for say 5 minutes and writes this data to files
+    end note
+    ContainerDb(slowProcessingDFS, "Distributed File System", "HDFS")
+    Rel(slowProcessingDataPartitioner, slowProcessingDFS, "write")
+    Container(slowProcessingCountingJob, "Counting Job", "MapReduce / Spark")
+    Rel(slowProcessingDFS, slowProcessingCountingJob, "pull")
+    ContainerDb(slowProcessingStorage, "Storage")
+    Rel(slowProcessingCountingJob, slowProcessingStorage, "write")
+    rectangle timerange [
+        | 0:00 | 0:01 | 0:02 | 0:03 | 0:04 | 
+        merge more granular time buckets (1min -> 5min)
+    ]
+    Rel(timerange, slowProcessingStorage, "pull")
+}
+
+Rel(eventMessaging, fastProcessing, "fast path")
+
+Rel(eventMessaging, slowProcessing, "slow path")
+
+@enduml

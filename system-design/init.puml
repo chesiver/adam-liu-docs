@@ -1,0 +1,10 @@
+@startuml init
+!include <C4/C4_Component>
+
+HIDE_STEREOTYPE()
+
+title System Design for XXX
+
+Person(user, "Client")
+
+@enduml

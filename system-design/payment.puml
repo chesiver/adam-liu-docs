@@ -1,0 +1,52 @@
+' https://medium.com/airbnb-engineering/avoiding-double-payments-in-a-distributed-payments-system-2981f6b070bb
+' https://medium.com/airbnb-engineering/measuring-transactional-integrity-in-airbnbs-distributed-payment-ecosystem-a670d6926d22
+
+@startuml payment
+!include <C4/C4_Component>
+
+HIDE_STEREOTYPE()
+
+title System Design for Payment System
+
+Person(user, "Client")
+
+System(apiGateway, "API Gateway")
+
+Rel(user, apiGateway, "request")
+
+System_Boundary(paymentService, "Payment Service") {
+    Container(paymentIdempotencyLayer, "Idempotency Library Layer")
+    ContainerDb(paymentRequestDB, "Payment Reqeust DB")
+    Rel(paymentIdempotencyLayer, paymentRequestDB, "1. find / create request")
+    Container(paymentResourceManager, "Resource Manager")
+    Rel(paymentIdempotencyLayer, paymentResourceManager, "2. pass payment request")
+    Container_Ext(3rdPartyProcessor, "3rd Party Payment Service")
+    Rel(paymentResourceManager, 3rdPartyProcessor, "3. request to 3rd party external sercice")
+    ContainerDb(paymentResponseDB, "Payment Response DB")
+    Rel(3rdPartyProcessor, paymentResponseDB, "4. find / create response")
+    BiRel(paymentRequestDB, paymentResponseDB, "related by unique key")
+}
+
+Rel(apiGateway, paymentService, "Payment request && unique key")
+
+System_Boundary(integrityTracking, "Transactional Integrity System") {
+    SystemDb(trackingHistoryDB, "Transaction History DB", "HDFS")
+    SystemQueue(paymentChangeQueue, "Event Messaging")
+    Rel(paymentService, paymentChangeQueue, "all request/response")
+    Rel(paymentChangeQueue, trackingHistoryDB, "pull")
+    Container(integrityChecker, "Integrity Checker", "batch processing")
+    Container(reportBackup, "Report Backup Data Store", "s3")
+    Rel(3rdPartyProcessor, reportBackup, "backup report")
+    Rel(reportBackup, integrityChecker, "pull report")
+    Rel(trackingHistoryDB, integrityChecker, "pull snapshot of database")
+}
+
+System(transactionPresentation, "Presentation of Transaction History", "OLAP")
+
+Rel(integrityChecker, transactionPresentation, "ETL")
+
+Rel(apiGateway, transactionPresentation, "View history")
+
+Lay_U(integrityTracking, transactionPresentation)
+
+@enduml

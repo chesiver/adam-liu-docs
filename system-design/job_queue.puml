@@ -1,0 +1,88 @@
+' https://medium.com/pinterest-engineering/pacer-pinterests-new-generation-of-asynchronous-computing-platform-5c338a15d2a0
+
+@startuml job-queue
+!include <C4/C4_Component>
+
+HIDE_STEREOTYPE()
+
+title System Design for Job Queue 2
+
+
+Person(client1, "Client")
+Person(client2, "Client")
+
+Container(jobManage, "Job Management Service", "Submit / Acknowladge Jobs", "Stateless")
+
+Rel(client1, jobManage, "enqueue")
+Rel(client2, jobManage, "enqueue")
+
+System_Boundary(dequeueBroker, "Dequeue Broker Service", "Pull job information from data store") {
+    rectangle borker1 {
+        rectangle broker_queue_A_1
+        rectangle broker_queue_B_1
+        rectangle cache
+    }
+    rectangle borker2 {
+        rectangle broker_queue_A_2
+        rectangle broker_queue_B_2
+    }
+    note bottom of cache 
+        Prefetching will reduce latency. 
+        Need be threadsafe (BlockingQueue)
+    end note
+    note bottom of borker1
+        dequeue broker doesn't need to query every datastore shard 
+        for a queue because they know which datastore shard stores partitions of a queue
+    end note
+}
+
+System_Boundary(datastore, "Mysql Cluster") {
+    rectangle queue_A {
+        rectangle queue_A_partition_1
+        rectangle queue_A_partiiton_2
+    }
+    rectangle queue_B {
+        rectangle queue_B_partition_1
+        rectangle queue_B_partition_2
+    }
+    rectangle queue_C {
+        rectangle queue_C_partition_1
+    }
+    note bottom of queue_C
+        Execution in FIFO order is possible.
+        If only one partition is created for a job queue
+    end note
+}
+
+Rel(jobManage, datastore, "submit")
+
+Rel(broker_queue_A_1, queue_A_partition_1, "pull")
+
+Rel(broker_queue_B_1, queue_B_partition_1, "pull")
+
+System(queueConfig, "Queue Config Coordination")
+
+Rel(queueConfig, datastore, "Config partition of storage")
+
+Rel(queueConfig, dequeueBroker, "Config broker partition mapping")
+
+System_Boundary(workerCluster, "Worker Cluster") {
+    rectangle worker_A {
+        rectangle worker_queue_A_1
+        rectangle worker_queue_A_2
+    }
+    rectangle worker_B {
+        rectangle worker_queue_B_1
+        rectangle worker_queue_B_2
+    }
+}
+
+System(workerMonioring, "Worker Monitoring && Resource Management / Control Plane")
+
+Rel(queueConfig, workerMonioring, "static setup")
+
+Rel(workerMonioring, workerCluster, "Monitoing Worker Cluster Status")
+
+Rel(worker_queue_B_1, broker_queue_B_1, "pull")
+
+@enduml

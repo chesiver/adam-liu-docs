@@ -1,0 +1,139 @@
+## Intro
+
+Chubby is a service that provides a distributed locking mechanism and also
+stores small files. Internally, it is implemented as a key/value store that also
+provides a locking mechanism on each object stored in it. 
+
+Apache ZooKeeper is the opensource alternative to Chubby.
+
+Chubby actually uses Paxos underneath to manage the state of the Chubby system at any
+point in time.
+
+## Use Cases
+
+- Leader/master election: Any lock service can be seen as a consensus service, as it converts the
+problem of reaching consensus to handing out locks. Basically, a set of
+distributed applications compete to acquire a lock, and whoever gets the lock
+first gets the resource.
+- Naming service (like DNS): It is hard to make faster updates to DNS due to its time-based caching nature,
+which means there is generally a potential delay before the latest DNS
+mapping is effective. As a result, chubby has replaced DNS inside Google as
+the main way to discover servers.
+- Storage (small objects that rarely change): Chubby provides a Unix-style interface to reliably store small files that do
+not change frequently (complementing the service offered by GFS).
+Applications can then use these files for any usage like DNS, configs, etc.
+- Distributed locking mechanism: Chubby provides a developer-friendly interface for coarse-grained
+distributed locks (as opposed to fine-grained locks). In other words,
+we can say that Chubby provides mechanisms like semaphores and mutexes
+for a distributed environment.
+
+## Key Concepts Summary
+
+### Chubby Cell
+
+A Chubby Cell basically refers to a Chubby cluster. A chubby cell consists of a small set of servers (typically 5) known as
+replicas. Using Paxos, one of the servers is chosen as the master who handles all
+client requests. Each replica maintains a small database to store files/directories/locks.
+The master writes directly to its own local database, which gets synced
+asynchronously to all the replicas. 
+
+
+### Client Library && API
+
+Client applications use a Chubby library to communicate with the replicas in
+the chubby cell using RPC.
+
+Chubby exports a file system interface similar to POSIX but simpler. It
+consists of a strict tree of files and directories in the usual way, with name
+components separated by slashes.
+
+File format: /ls/chubby_cell/directory_name/.../file_name
+
+
+### Why was Chubby Built as a Service?
+
+- Development becomes easy
+- Lock-based interface is developer-friendly
+- Provide quorum & replica management
+- Broadcast functionality
+
+
+### Advisory Locks
+
+Chubby locks are advisory, which means it is up to the application to honor
+the lock. Chubby doesn't make locked objects inaccessible to clients not
+holding their locks. It is more like record keeping and allows the lock
+requester to discover that lock is held.
+
+
+### Server Initialization
+
+- A master is chosen among Chubby replicas using Paxos.
+- Current master information is persisted in storage, and all replicas
+become aware of the master.
+
+### Client Initialization
+
+- Client contacts the DNS to know the listed Chubby replicas.
+- Client calls any Chubby server directly via Remote Procedure Call (RPC).
+- If that replica is not the master, it will return the address of the current
+master.
+- Once the master is located, the client maintains a session with it and
+sends all requests to it until it indicates that it is not the master anymore
+or stops responding.
+
+### Locks
+
+Each chubby node can act as a reader-writer lock in one of the following two
+way.
+
+- Exclusive: One client may hold the lock in exclusive (write) mode.
+- Shared: Any number of clients may hold the lock in shared (reader)
+mode.
+
+### Sequencer
+
+Sequencer = Name of the lock + Lock mode (exclusive or shared) + Lock generation number
+
+An application's master server can generate a sequencer and send it with
+any internal order to other servers. Application servers that receive orders
+from a primary can check with Chubby if the sequencer is still good and does
+not belong to a stale primary.
+
+### Session 
+
+A Chubby session is a relationship between a Chubby cell and a Chubby
+client.
+
+- It exists for some interval of time and is maintained by periodic
+handshakes called KeepAlives.
+- Client's handles, locks, and cached data only remain valid provided its
+session remains valid.
+
+### KeepAlive
+
+KeepAlive is basically a way for a client to maintain a constant session with
+Chubby cell. 
+
+### Events
+
+Chubby supports a simple event mechanism to let its clients subscribe to a
+variety of events. Events are delivered to the client asynchronously via
+callbacks from the Chubby library. Clients subscribe to a range of events
+while creating a handle. Here are examples of such events:
+
+- File contents modified
+- Child node added, removed, or modified
+- Chubby master failed over
+- A handle (and its lock) has become invalid.
+- Lock acquired
+- Conflicting lock request from another client
+
+### Cache
+
+To reduce read traffic, Chubby clients cache file
+contents, node metadata, and information on open handles in a consistent,
+write-through cache in the client's memory. Because of this caching, Chubby
+must maintain consistency between a file and a cache as well as between the
+different replicas of the file. Chubby clients maintain their cache by a lease
+mechanism and flush the cache when the lease expires.
