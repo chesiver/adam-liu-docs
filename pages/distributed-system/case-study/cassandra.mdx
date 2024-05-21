@@ -1,0 +1,177 @@
+## Intro 
+
+Cassandra is typically classified as an AP (i.e.,
+available and partition tolerant) system which means that availability and
+partition tolerance are generally considered more important than the
+consistency.
+
+Cassandra uses peer-to-peer architecture, with each node connected to all
+other nodes. Each Cassandra node performs all database operations and can
+serve client requests without the need for any leader node.
+
+## Use Cases
+
+Though Cassandra can support strong consistency, it
+comes with a performance impact. Cassandra is optimized for **high throughput** and **faster writes**, 
+and can be used for collecting big data for performing real-time analysis:
+
+- Storing key-value data with high availability
+- Time series data model
+- Write-heavy applications
+
+## Key Concept
+
+### Cassandra Keys
+
+The Primary key uniquely identifies each row of a table. In Cassandra
+primary key has two parts: Partition key + Clustering key.
+
+The partition key decides which node stores the data, and the clustering key
+decides how the data is stored within a node.
+
+### Partitioner
+
+By default, Cassandra uses the Murmur3 hashing function. Murmur3 will
+always produce the same hash for a given partition key. This means that we
+can always find the node where a specific row is stored.
+
+All Cassandra nodes learn about the token assignments of other nodes
+through gossip. This means any node can handle a request
+for any other node's range.
+
+### Coordinator Node
+
+A client may connect to any node in the cluster to initiate a read or write
+query. This node is known as the coordinator node. The coordinator
+identifies the nodes responsible for the data that is being written or read and
+forwards the queries to them.
+
+### Replication Strategy
+
+The node that owns the range in which the hash of the partition key falls will
+be the first replica; all the additional replicas are placed on the consecutive
+nodes. Cassandra places the subsequent replicas on the next node in a
+clockwise manner.
+
+### Consistency Levels
+
+Cassandra's consistency level is defined as the minimum number of
+Cassandra nodes that must fulfill a read or write operation before the
+operation can be considered successful. 
+
+For a write, the coordinator node contacts all replicas, as determined by the replication
+factor, and considers the write successful when a number of replicas equal
+to the consistency level acknowledge the write.
+
+### Snitch
+
+Snitch keeps track of the network topology of Cassandra nodes. It determines
+which data-centers and racks nodes belong to. Cassandra uses this
+information to route requests efficiently.
+
+### Gossip 
+
+Each gossip message has a version associated with it, so that during a gossip
+exchange, older information is overwritten with the most current state for a
+particular node.
+
+In Cassandra, each node stores a generation number
+which is incremented every time a node restarts. This generation number is
+included in each gossip message exchanged between nodes and is used to
+75distinguish the current state of a node from its state before a restart. 
+
+### Failure Detection
+
+Cassandra uses an adaptive failure detection mechanism as described by Phi
+Accrual Failure Detector. This algorithm uses historical heartbeat
+information to make the threshold adaptive. A generic Accrual Failure
+Detector, instead of telling that the server is alive or not, outputs the
+suspicion level about a server; a higher suspicion level means there are
+higher chances that the server is down. 
+
+As a node's suspicion level increases, the system can
+gradually decide to stop sending new requests to it.
+
+### Commit Log
+
+When a node receives a write request, it immediately writes the data to a
+commit log. The commit log is a write-ahead log and is stored on disk. It is
+used as a crash-recovery mechanism to support Cassandra's durability goals.
+
+### MemTable
+
+- Each node has a MemTable in memory for each Cassandra table
+- Each MemTable contains data for a specific Cassandra table, and it resembles that table in memory.
+- Each MemTable accrues writes and provides reads for data not yet flushed to disk.
+- Commit log stores all the writes in sequential order, with each new
+write appended to the end, whereas MemTable stores data in the sorted
+order of partition key and clustering columns.
+- After writing data to the Commit Log and MemTable, the node sends an
+acknowledgment to the coordinator that the data has been successfully
+written.
+
+### SSTable
+
+When the number of objects stored in the MemTable reaches a threshold, the
+contents of the MemTable are flushed to disk in a file called SSTable. At this
+point, a new MemTable is created to store subsequent data. This flushing is a
+non-blocking operation; multiple MemTables may exist for a single table, one
+current, and the rest waiting to be flushed. Each SStable contains data for a
+specific table
+
+### Caching
+
+- Row cache: The row cache, caches frequently read (or hot) rows. It
+stores a complete data row, which can be returned directly to the client
+if requested by a read operation.
+- Key cache: Key cache stores a map of recently read partition keys to
+their SSTable offsets. This facilitates faster read access into SSTables
+84stored on disk and improves the read performance but could slow down
+the writes, as we have to update the Key cache for every
+- Chunk cache: Chunk cache is used to store uncompressed chunks of
+data read from SSTable files that are accessed frequently
+
+### Reading from SSTable
+
+Each SStable has a Bloom filter associated with it, which tells if a particular
+key is present in it or not. Bloom filters are used to boost the performance of
+read operations. 
+
+Bloom filters are very fast, non-deterministic algorithms for
+testing whether an element is a member of a set.
+
+Cassandra maintains a Bloom filter for each SSTable. When a query is
+performed, the Bloom filter is checked first before accessing the disk.
+Because false negatives are not possible, if the filter indicates that the
+element does not exist in the set, it certainly does not; but if the filter thinks
+that the element is in the set, the disk is accessed to make sure.
+
+### How are SSTables stored on the disk
+
+- Data File: Actual data is stored in a data file. It has partitions and rows
+associated with those partitions. The partitions are in sorted order
+- Partition Index file: Stored on disk, partition index file stores the
+sorted partition keys mapped to their SSTable offsets. It enables locating
+a partition exactly in an SSTable rather than scanning data.
+
+### Compaction
+
+- SizeTiered Compaction Strategy: This compaction strategy is suitable for
+insert-heavy and general workloads. This is the default compaction strategy
+and is triggered when multiple SSTables of a similar size are present
+- Leveled Compaction Strategy: This strategy is used to optimize read
+performance. This strategy groups SSTables into levels, each of which has a
+fixed size limit which is ten times larger than the previous level.
+- Time Window Compaction Strategy: The Time Window Compaction
+Strategy is designed to work on time series data. It compacts SSTables within
+a configured time window. This strategy is ideal for time series data which is
+immutable after a fixed time interval.
+
+### Tombstones
+
+When we delete data, Cassandra does not
+delete it right away, instead associates a tombstone with it, with a time to
+expiry. In other words, a tombstone is a marker that is kept to indicate data
+that has been deleted. When we execute a delete operation, the data is not
+immediately deleted. Instead, it's treated as an update operation that places a
+tombstone on the value.

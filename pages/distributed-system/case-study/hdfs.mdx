@@ -1,0 +1,147 @@
+## Intro 
+
+HDFS is a distributed file system and was built to store unstructured data. It
+is designed to store huge files reliably and stream those files at high
+bandwidth to user applications.
+
+HDFS is a variant and a simplified version of the Google File System (GFS).
+
+Given the current HDFS design, the following types of applications are **not** a
+good fit for HDFS:
+
+- Low-latency data access
+- Lots of small file
+- No concurrent writers and arbitrary file modifications
+
+## Architecture
+
+All files stored in HDFS are broken into multiple fixed-size blocks, where
+each block is 128 megabytes in size by default (configurable on a per-file
+basis). 
+
+Each file stored in HDFS consists of two parts: the actual file data and
+the metadata, i.e., how many block parts the file has, their locations and the
+total file size, etc. 
+
+HDFS cluster primarily consists of a NameNode that
+manages the file system metadata and DataNodes that store the actual data.
+
+
+## Key Concepts
+
+### Cluster Topology 
+
+A typical data center contains many racks of servers connected using
+switches. A common configuration for Hadoop clusters is to have about 30 to
+40 servers per rack. Each rack has a dedicated gigabit switch that connects
+all of its servers and an uplink to a core switch or router, whose bandwidth
+is shared by many racks in the data center.
+
+When HDFS is deployed on a cluster, each of its servers is configured and
+mapped to a particular rack. The network distance between servers is
+measured in hops, where one hop corresponds to one link in the topology.
+Hadoop assumes a tree-style topology, and the distance between two servers
+is the sum of their distances to their closest common ancestor.
+
+### Rack Aware Replication
+
+The default HDFS replica placement policy can be summarized as follows:
+1. No DataNode will contain more than one replica of any block.
+2. If there are enough racks available, no rack will contain more than two
+replicas of the same block.
+
+### Synchronization Semantics
+
+Early versions of HDFS followed strict immutable semantics. Once a file
+was written, it could never again be re-opened for writes; files could still be
+deleted. However, current versions of HDFS support append. This is still
+quite limited in the sense that existing binary data once written to HDFS
+cannot be modified in place.
+
+### Consistency Model 
+
+HDFS follows a strong consistency model. As stated above, each data block
+written to HDFS is replicated to multiple nodes. To ensure strong consistency,
+a write is declared successful only when all replicas have been written successfully. 
+This way, all clients see the same (and consistent) view of the
+file. Since HDFS does not allow multiple concurrent writers to write to an
+HDFS file, implementing strong consistency becomes a relatively easy task.
+
+
+### Data Integrity
+
+Data Integrity refers to ensuring the correctness of the data. 
+HDFS client uses checksum to verify the file contents. When a
+client stores a file in HDFS, it computes a checksum of each block of the file
+and stores these checksums in a separate hidden file in the same HDFS
+namespace. 
+
+A block scanner process periodically runs on each DataNode to scan blocks
+stored on that DataNode and verify that the stored checksums match the
+block data. 
+
+### Caching
+
+HDFS offers a Centralized Cache Management scheme to allow
+its users to specify paths to be cached. Clients can tell the NameNode which
+files to cache. NameNode communicates with the DataNodes that have the
+desired blocks on disk and instructs them to cache the blocks in off-heap
+caches.
+
+### DataNode Failure
+
+The NameNode keeps track of DataNodes through a heartbeat mechanism.
+Each DataNode sends periodic heartbeat messages (every few seconds) to the
+NameNode. 
+
+The NameNode performs regular
+status checks on the file system to discover under-replicated blocks and
+performs a cluster rebalance process to replicate blocks that have less than
+the desired number of replicas.
+
+### NameNode Failure
+
+The NameNode is a single point of failure (SPOF). A NameNode failure will
+bring the entire file system down. Internally, the NameNode maintains two
+on-disk data structures that store the file system's state: an FsImage file and
+an EditLog. FsImage is a checkpoint (or the image) of the file system
+metadata at some point in time, while the EditLog is a log of all of the file
+system metadata transactions since the image file was last created. 
+
+Hadoop, in its 2.0 release, added support for HDFS
+High Availability (HA). In this implementation, there are two (or more)
+NameNodes in an active-standby configuration. At any point in time, exactly
+one of the NameNodes is in an active state, and the others are in a Standby
+state. The active NameNode is responsible for all client operations in the
+cluster, while the Standby is simply acting as a follower of the active,
+maintaining enough state to provide a fast failover when required.
+
+### Quorum Journal Manager 
+
+The sole purpose of the QJM is to provide a highly available EditLog. The
+QJM runs as a group of journal nodes, and each edit must be written to a
+quorum (or majority) of the journal nodes. Typically, there are three journal
+nodes, so that the system can tolerate the loss of one of them. This
+arrangement is similar to the way ZooKeeper (https://zookeeper.apache.org/)
+works, although it is important to realize that the QJM implementation does
+not use ZooKeeper.
+
+### ZooKeeper
+
+The ZKFailoverController (ZKFC) is a ZooKeeper client that runs on each
+NameNode and is responsible for coordinating with the Zookeeper and also
+monitoring and managing the state of the NameNode.
+
+### Erasure Coding 
+
+By default, HDFS stores three copies of each block, resulting in a 200%
+overhead (to store two extra copies) in storage space and other resources
+(e.g., network bandwidth). Compared to this default replication scheme,
+Erasure Coding (EC) is probably the biggest change in HDFS in recent years.
+
+Under EC, data is broken down into fragments, expanded, encoded with
+redundant data pieces, and stored across different DataNodes. If, at some
+point, data is lost on a DataNode due to corruption, etc., then it can be
+reconstructed using the other fragments stored on other DataNodes.
+Although EC is more CPU intensive, it greatly reduces the storage needed for
+reliably storing a large data set

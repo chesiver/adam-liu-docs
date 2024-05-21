@@ -1,0 +1,170 @@
+## Intro
+
+Apache Kafka is an open-source publish-subscribe-based messaging system.
+
+At a high level, we can call Kafka a distributed Commit Log. A Commit Log
+(also known as a Write-Ahead log or a Transactions log) is an append-only
+data structure that can persistently store a sequence of records. Records are
+110always appended to the end of the log, and once added, records cannot be
+deleted or modified. Reading from a commit log always happens from left to
+right (or old to new).
+
+## Use Cases
+
+- Metrics: Kafka can be used to collect and aggregate monitoring data.
+Distributed services can push different operational metrics to Kafka
+servers. These metrics can then be pulled from Kafka to produce
+aggregated statistics
+- Log Aggregation: Kafka can be used to collect logs from multiple
+sources and make them available in a standard format to multiple
+consumers.
+- Stream processing: Kafka is quite useful for use cases where the
+collected data undergoes processing at multiple stages.
+- Commit Log: Kafka can be used as an external commit log for any
+distributed system. Distributed services can log their transactions to
+Kafka to keep track of what is happening. This transaction data can be
+used for replication between nodes and also becomes very useful for
+disaster recovery, for example, to help failed nodes to recover their
+states.
+
+## Key Concept
+
+### ZooKeeper
+
+ZooKeeper is a distributed key-value store and is used for coordination and
+storing configurations. It is highly optimized for reads. Kafka uses ZooKeeper
+to coordinate between Kafka brokers; ZooKeeper maintains metadata
+information about the Kafka cluster
+
+### Topic Partitions
+
+Each topic partition can be placed on a separate Kafka broker. When
+a new message is published on a topic, it gets appended to one of the topic's
+partitions. The producer controls which partition it publishes messages to
+based on the data.
+
+Essentially, a partition is an ordered sequence of messages. Producers
+continually append new messages to partitions. Kafka guarantees that all
+messages inside a partition are stored in the sequence they came in
+
+A unique sequence ID called an offset gets assigned to every message
+that enters a partition.
+
+Offset sequences are unique only to each partition. This means, to locate
+a specific message, we need to know the Topic, Partition, and Offset
+number.
+
+Consumers, themselves, poll Kafka for new messages and
+say what records they want to read. This allows them to
+increment/decrement the offset they are at as they wish, thus being able to
+replay and reprocess messages.
+
+### Leader
+
+A leader is the node responsible for all reads and writes for the given
+partition. Every partition has one Kafka broker acting as a leader.
+
+### Follower
+
+Each follower's responsibility is to replicate the leader's data to serve as a 'backup'
+partition. This also means that any follower can take over the leadership if
+the leader goes down.
+
+Kafka stores the location of the leader of each partition in ZooKeeper.
+
+### In-sync replicas
+
+A follower is an in-sync
+replica only if it has fully caught up to the partition it is following. In other
+words, ISRs cannot be behind on the latest records for a given partition.
+Only ISRs are eligible to become partition leaders. 
+
+### High-water Mark
+
+To ensure data consistency, the leader broker never returns (or exposes)
+messages which have not been replicated to a minimum set of ISRs. For this,
+brokers keep track of the high-water mark, which is the highest offset that all
+ISRs of a particular partition share.
+
+The leader exposes data only up to the
+high-water mark offset and propagates the high-water mark offset to all
+followers.
+
+### Consumer Group 
+
+Kafka ensures that only a single consumer reads messages from any
+partition within a consumer group. In other words, topic partitions are a
+unit of parallelism - only one consumer can work on a partition in a
+consumer group at a time. 
+
+Kafka stores the current offset per consumer group per topic per partition,
+as it would for a single consumer. This means that unique messages are only
+sent to a single consumer in a consumer group, and the load is balanced
+across consumers as equally as possible.
+
+### Who the Leader of a Partition is ?
+
+Clients fetch metadata information from Kafka brokers directly; Brokers talk to
+ZooKeeper to get the latest metadata. 
+
+
+### Controller Broker
+
+Within the Kafka cluster, one broker is elected as the Controller. This
+Controller broker is responsible for admin operations, such as
+creating/deleting a topic, adding partitions, assigning leaders to partitions,
+monitoring broker failures, etc.
+
+### Generation Clock
+
+Split-brain is commonly solved with a generation clock, which is simply a
+monotonically increasing number to indicate a server’s generation. In Kafka,
+the generation clock is implemented through an epoch number. 
+
+This epoch number is stored in ZooKeeper.
+
+### Delivery Semantics
+
+#### Producer
+
+- Async 
+- Committed to Leader
+- Committed to Leader and Quorum
+
+#### Consumer
+
+- At-most-once 
+- At-least-once 
+- Exactly-once: Under this option, the consumer puts the message
+processing and the offset increment in one transaction. 
+
+### Storing Messages to Disks
+
+Kafka writes its messages to the local disk and does not keep anything in
+RAM. Disks storage is important for durability so that the messages will not
+disappear if the system dies and restarts. Disks are generally considered to
+be slow. However, there is a huge difference in disk performance between
+random block access and sequential access. Because all writes and reads happen sequentially, Kafka has
+a very high throughput.
+
+Since Kafka stores
+messages in a standardized binary format unmodified throughout the whole
+flow (producer → broker → consumer), it can make use of the zero-copy
+(https://en.wikipedia.org/wiki/Zero-copy) optimization.
+
+### Record Retention
+
+By default, Kafka retains records until it runs out of disk space. We can set
+time-based limits (configurable retention period), size-based limits
+(configurable based on size), or compaction (keeps the latest version of
+record using the key).
+
+### Client Quota
+
+In Kafka, quotas are byte-rate thresholds defined per client-ID . A clientID logically identifies an application making a request. 
+A single client-ID can span multiple producer and consumer instances. The quota is applied
+for all instances as a single entity. 
+
+The broker does not return an error when a client exceeds its quota but
+instead attempts to slow the client down.  This also prevents clients
+from having to implement special back-off and retry behavior.

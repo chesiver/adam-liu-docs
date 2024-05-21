@@ -1,0 +1,130 @@
+## Intro 
+
+Dynamo is a highly available key-value store developed by Amazon. 
+It's discovered that many services **need only primary-key access to data**. 
+A multi-table relational database system would be an overkill for such services
+and would also limit scalability and availability.
+
+At a high level, Dynamo is a Distributed Hash Table (DHT) that is replicated
+across the cluster for high availability and fault tolerance.
+
+## Key Concept
+
+### Consistent Hashing
+
+Dynamo uses **Consistent Hashing** to distribute its data among nodes.
+Consistent hashing also makes it easy to add or remove nodes from a
+Dynamo cluster.
+
+Consistent hashing represents the data managed by a cluster as a ring. Each
+node in the ring is assigned a range of data. Dynamo uses the consistent
+hashing algorithm to determine what row is stored to what node.
+
+Whenever Dynamo is serving a put() or a get() request, the first step it performs is to 
+apply the **MD5 hashing algorithm** to the key. 
+The output of this hashing algorithm determines within which range the data lies.
+
+When a node is removed, the next node becomes responsible for all of the keys stored on the outgoing node.
+
+### Virtual Node
+
+The basic Consistent Hashing algorithm assigns a single token (or a consecutive hash range) to each physical node.
+
+Instead of assigning a single token to a node, the hash range is divided into multiple smaller ranges, 
+and each physical node is assigned multiple of these smaller ranges. Each of these subranges is called a **Vnode**.
+
+Practically, Vnodes are randomly distributed across the cluster and are
+generally non-contiguous so that no two neighboring Vnodes are assigned to
+the same physical node.
+
+### Optimistic Replication
+
+Each key is assigned to a coordinator node (the node that falls first in the hash range),
+which first stores the data locally and then replicates it to N - 1 clockwise
+successor nodes on the ring. This results in each node owning the region on
+the ring between it and its Nth predecessor. 
+
+### Preference List
+
+The list of nodes responsible for storing a particular key is called the
+preference list. Dynamo is designed so that every node in the system can
+determine which nodes should be in this list for any specific key.
+
+### Sloppy Quorum
+
+To increase the availability, Dynamo does not enforce strict quorum requirements, and
+instead uses something called sloppy quorum. With this approach, all
+read/write operations are performed on the first N healthy nodes from the
+preference list, which may not always be the first N nodes encountered
+while moving clockwise on the consistent hashing ring.
+
+### Request Handling through State Machine
+
+Each client request results in creating a state machine on the node that
+received the client request. The state machine contains all the logic for
+identifying the nodes responsible for a key, sending the requests, waiting for
+responses, potentially doing retries, processing the replies, and packaging
+the response for the client.
+
+### Hinted handoff
+
+When a node is unreachable, another node can accept writes on its behalf. 
+The write is then kept in a local buffer and sent out once the destination node is reachable again. 
+This makes Dynamo “always writeable.”
+
+The main problem is that since a sloppy quorum is not a strict majority, the
+data can and will diverge. Dynamo allows this and resolves these conflicts using Vector Clocks.
+
+### Vector Clock
+
+A vector clock is effectively a (node, counter) pair. One vector clock is associated with every version of every
+object stored in Dynamo. One can determine whether two versions of an 
+object are on parallel branches or have a causal ordering by examining their vector clocks. 
+
+It would be nice
+to be able to automatically resolve some conflicts in the background. To do
+this, we need to quickly compare two copies of a range of data residing on
+different replicas and figure out exactly which parts are different
+
+### Anti-entropy Through Merkle Trees
+
+Dynamo uses Merkle trees to compare replicas of a
+range. A Merkle tree is a binary tree of hashes, where each internal node is
+the hash of its two children, and each leaf node is a hash of a portion of the
+original data.
+
+### Gossip Protocol
+
+Dynamo uses gossip protocol that enables each node to keep track of state
+information about the other nodes in the cluster, like which nodes are
+reachable, what key ranges they are responsible for, and so on (this is
+basically a copy of the hash ring). 
+
+### Seed Nodes
+
+Seed nodes are fully functional nodes and can be obtained either from a static configuration or a
+configuration service. This way, all nodes are aware of seed nodes. Each
+node communicates with seed nodes through gossip protocol to reconcile
+membership changes; therefore, logical partitions are highly unlikely.
+
+
+## Criticism on Dynamo
+
+- Each Dynamo node contains the entire Dynamo routing table. This is
+likely to affect the scalability of the system as this routing table will
+grow larger and larger as nodes are added to the system
+- Dynamo seems to imply that it strives for symmetry, where every node
+in the system has the same set of roles and responsibilities, but later, it
+specifies some nodes as seeds. Seeds are special nodes that are
+externally discoverable. These are used to help prevent logical
+partitions in the Dynamo ring. This seems like it may violate Dynamo's
+symmetry principle
+- Although security was not a concern as Dynamo was built for internal
+use only, DHTs can be susceptible to several different types of
+attacks. While Amazon can assume a trusted environment, sometimes a
+buggy software can act in a manner quite similar to a malicious actor.
+- Dynamo's design can be described as a “leaky abstraction,” where
+client applications are often asked to manage inconsistency, and the
+user experience is not 100% seamless. For example, inconsistencies in
+the shopping cart items may lead users to think that the website is
+buggy or unreliable.
