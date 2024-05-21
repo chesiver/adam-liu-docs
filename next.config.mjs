@@ -2,7 +2,7 @@ import nextra from 'nextra'
 
 // https://github.com/shuding/nextra/pull/562
 // https://github.com/mike-lischke/vscode-antlr4/blob/master/syntaxes/antlr.json
-import antlrGrammar from './antlr/antlr.tmLanguage.json' assert { type: 'json' };
+import antlrGrammar from './antlr/antlr.tmLanguage.json' with { type: 'json' };
 const antlr = {
     id: "antlr",
     scopeName: 'source.antlr',
