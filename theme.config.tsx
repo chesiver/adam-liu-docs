@@ -15,7 +15,10 @@ const config: DocsThemeConfig = {
     },
     sidebar: {
         defaultMenuCollapseLevel: 2,
-    }
+    },
+    nextThemes: {
+        defaultTheme: "dark",
+    },
 }
 
 export default config
