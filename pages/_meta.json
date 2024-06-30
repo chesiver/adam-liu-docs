@@ -1,11 +1,11 @@
 {
   "index": "Introduction",
   "graphics": "Graphics",
+  "design-questions": "Design Questions",
   "study-compiler": "Study Compiler",
   "network-io": "Network I/O",
   "c++": "C++",
   "golang": "Golang",
-  "common-questions": "Common Questions",
   "distributed-system": "Distributed System",
   "bash": "Bash",
   "vercel-commands": "Vercel commands",
