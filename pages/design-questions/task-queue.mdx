@@ -1,0 +1,37 @@
+### Requirements
+
+- Clients can schedule tasks to execute immediately or at a specified time.
+- Execute base on priority
+- Track job status
+
+### Task Storage
+
+- A generic data store with indexed querying capability
+- Index on job executed timestamp
+
+### Store Consumer
+
+- Periodically polls the task store to find tasks that are ready for execution.
+- Pushe jobs to the right queues.
+- Update job status
+
+### Queue
+
+- Buffer between the Store Consumer and Controllers
+- In-memory FIFO
+
+### Controller
+
+- Have a single conrtoller process assigned to a single queue
+- Run inside worker instance
+
+### Heartbeat and Status Controller
+
+- Set task status after execution and heartbeats during task execution
+- Receive claim requests from controller
+
+### References 
+
+1. https://leetcode.com/discuss/general-discussion/1082786/System-Design%3A-Designing-a-distributed-Job-Scheduler-or-Many-interesting-concepts-to-learn
+2. https://dropbox.tech/infrastructure/asynchronous-task-scheduling-at-dropbox
+
