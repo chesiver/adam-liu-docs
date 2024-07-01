@@ -1,0 +1,26 @@
+### Hashtable && Partitioning
+
+- Route each item identifier to it's own host
+- Merge sorted lists
+
+### Count-min Sketch
+
+- Two-dimensional array. Height is number of hash function
+- Predefined size. Replacement of hashmap to avoid infinite growing size
+
+### API Gateway
+
+- Every API call is logged.
+- Do some initial aggregation. Flush buffer.
+- Send raw aggregated data into a kafka queue
+
+### Slow Path vs Fast Path
+
+- Fast path for approximate results. 
+- Slow path of MapReduce job calculates precise results for one hour / one minute.
+- Merge 2 1-hour results cannot produce 100%-correct results. It's also approximate. 
+
+### References
+
+1. https://www.youtube.com/watch?v=kx-XDoPjoHw&t=1751s
+2. https://serhatgiydiren.com/system-design-interview-top-k-problem-heavy-hitters

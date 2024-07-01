@@ -1,4 +1,5 @@
 {
     "chat-system": "Chat System",
-    "task-queue": "Task Queue"
+    "task-queue": "Task Queue",
+    "top-k": "Top K"
 }
