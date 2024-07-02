@@ -1,5 +1,6 @@
 {
     "chat-system": "Chat System",
     "task-queue": "Task Queue",
-    "top-k": "Top K"
+    "top-k": "Top K",
+    "metric-monitoring": "Metric Monitoring"
 }

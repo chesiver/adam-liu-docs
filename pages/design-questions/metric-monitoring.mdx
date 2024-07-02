@@ -1,0 +1,42 @@
+### Requirements
+
+- Collect metrics collection from metrics sources.
+- User should be able to query metrics at different time granularities.
+- Alerts can be created on the metrics.
+
+
+### Pull 
+
+- Metrics sources instances will self-register at startup over the known IP:Port of service discovery/registration cluster.
+- Metrics collector can optionally register to changes with service discovery.
+- Metrics collector fetches configuration meta data of service endpoints from service discovery.
+- Metrics collector pulls metrics data via a predefined HTTP endpoint.
+
+E.g. Prometheus
+
+### Push
+
+- A collection agent is installed on every server being monitored. 
+Agent collects metrics from the services running on the server and pushes those metrics periodically.
+- To prevent metrics from falling behind in push model, metrics collector should be in an autoscale cluster with a load balancer.
+
+### Storage
+
+- Metrics collector can write data to a stream, such as Kafka or Kinesis.
+- A stream processor can then aggregate the data and push it to a time-series database. E.g. OpenTSDB, InfluxDB
+
+### Query
+
+- Depdends on times-series database.
+- Visualize. E.g . Grafana
+
+
+### Alert
+
+- Stroe alert rules in database 
+- Send requests to query service
+
+### References
+
+1. https://medium.com/@tahir.rauf/system-design-metrics-monitoring-alerting-system-844a466e32c5
+2. https://medium.com/@guptagoutam2021/how-to-design-a-metrics-monitoring-and-alerting-system-87c02e990dd1
