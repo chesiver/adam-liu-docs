@@ -1,0 +1,46 @@
+### Use Cases
+
+- Tweet. Allow you to post text, image, video, links, etc
+- Share. Allow you to share someone's tweets
+- Follow && Timelines
+- Search
+
+### User Service
+
+- Store all the user-related information in our system and provide endpoints for login, register
+- Sits on top of a User DB which is a mysql database.
+
+### User Graph Service
+
+- The “follow” related requests will be serviced by a Graph Service, which sits on top of a graph database.
+- Follow-links won't change too frequently, so it makes sense to cache this information in a Redis.
+
+### Timeline Service (for Following)
+
+- Precalculate the timeline of active users and cache it in a Redis. Notify followers 
+- Don't do precalculation for too famous users
+
+### Search && Analytics
+
+- Ingest tweets into Elasticsearch
+- Spark streaming to calculate trending keywords.
+
+### Tweet Storage
+
+NoSql MongoDB / Cassandra as the main database for its scalability and schema flexibility.  
+
+Tweet, User, Hashtag, UserMentioned.
+
+Take Hashtag is a separate document from Tweet document because the main functionality we want to implement efficiently 
+is the mapping from hash tag to tweets.
+
+User.number_of_likes would have a scalability challenge. Create a sharded counter service for users with more than, e.g., 1,000 followers
+Once in a while (say every 5 minutes or so), the service would write the number_of_likes in Tweet document.
+
+Expect creating and viewing would show strong locality. Shading by user ID seems reasonable.
+
+### Reference
+
+1. https://www.codekarle.com/system-design/Twitter-system-design.html
+2. https://codemia.io/system-design/design-twitter/solutions/sbstfs/My-Solution-for-Design-Twitter-with-Score-910
+3. https://github.com/donnemartin/system-design-primer/blob/master/solutions/system_design/twitter/README.md

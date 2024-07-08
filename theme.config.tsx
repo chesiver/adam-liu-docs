@@ -14,7 +14,7 @@ const config: DocsThemeConfig = {
         text: 'Nextra Docs Template',
     },
     sidebar: {
-        defaultMenuCollapseLevel: 2,
+        defaultMenuCollapseLevel: 1,
     },
     nextThemes: {
         defaultTheme: "dark",

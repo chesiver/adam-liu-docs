@@ -3,5 +3,6 @@
     "task-queue": "Task Queue",
     "top-k": "Top K",
     "metric-monitoring": "Metric Monitoring",
-    "web-crawler": "Web Crawler"
+    "web-crawler": "Web Crawler",
+    "twitter": "Twitter"
 }
