@@ -2,5 +2,6 @@
     "chat-system": "Chat System",
     "task-queue": "Task Queue",
     "top-k": "Top K",
-    "metric-monitoring": "Metric Monitoring"
+    "metric-monitoring": "Metric Monitoring",
+    "web-crawler": "Web Crawler"
 }
