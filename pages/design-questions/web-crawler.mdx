@@ -14,11 +14,15 @@ The higher the priority, the sooner the URL popped from the queue.
 when the request can be made.
 - Caller threads - When we extract an URL from the back queue this thread group fetches the URLs and assigns URLs to the back queues.
 
-
 ### Bottleneck of DNS Resolution
 
 - Caching the IP Addresses
 - Fetching the IP Addresses asynchronously - Have separate worker threads that send requests to the DNS servers. 
+
+### Distributed URL frontier
+
+- Partition nodes by hash range of URL
+- Partition nodes by hash range of Hosts. If there's a separate domain-name resolution service.
 
 ### Storage
 
@@ -30,8 +34,13 @@ when the request can be made.
 - Content deduplication. MD5 / SHA1 hash algorithm to generate document fingerprint.
 - URL deduplication. Bloom filter.
 
+### Inverted Index Service
+
+- Asynchronous jobs to generate inverted index.
+
 ### Reference 
 
-https://leetcode.com/discuss/interview-question/system-design/2950256/High-Level-Design-of-a-Web-Crawler
-https://www.youtube.com/watch?v=OmyHt0JM7HM
-https://github.com/donnemartin/system-design-primer/blob/master/solutions/system_design/web_crawler/README.md
+1. https://leetcode.com/discuss/interview-question/system-design/2950256/High-Level-Design-of-a-Web-Crawler
+2. https://github.com/donnemartin/system-design-primer/blob/master/solutions/system_design/web_crawler/README.md
+3. https://www.youtube.com/watch?v=OmyHt0JM7HM
+4. https://www.youtube.com/watch?v=MdWvMX4J-Vc
