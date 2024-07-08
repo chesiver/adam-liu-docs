@@ -15,7 +15,7 @@
 - The “follow” related requests will be serviced by a Graph Service, which sits on top of a graph database.
 - Follow-links won't change too frequently, so it makes sense to cache this information in a Redis.
 
-### Timeline Service (for Following)
+### Timeline Service
 
 - Precalculate the timeline of active users and cache it in a Redis. Notify followers 
 - Don't do precalculation for too famous users
