@@ -1,0 +1,46 @@
+### Cache Strategies
+
+- Write Around: When data is written, it is written directly to the database and not to the cache. 
+The cache is only updated when data is read.
+- Write Back (Write Behind): Data is first written to the cache and then, after a certain amount of time or under certain conditions, 
+written back to the database.  This allows for batch updates.
+- Write Through: Data is written simultaneously to the cache and the database. This ensures data consistency between the cache and database.
+
+### Cache Eviction Policies
+
+- Least Recently Used (LRU): Evicts the least recently accessed items first, assuming that items not accessed recently are less likely to 
+be accessed in the future.
+- Least Frequently Used (LFU): Prioritizes eviction of least frequently accessed items, assuming frequent access implies future relevance.
+
+### Cache invalidation
+
+- Time to Live (TTL): Data is invalidated after a specified duration.
+    - Active expiration: A background process or thread periodically scans the cache to check the TTL of cache entries.
+    - Passive expiration: Checks the TTL of a cache entry at its access time.
+- Write-Invalidate: When data is updated in the primary storage, corresponding cache entries are invalidated.
+- Change Notification: The cache listens for notifications from the data source about changes.
+- Polling: The cache periodically checks the validity of its entries by comparing them with the source data.
+
+
+### Key Distribution Model (Redis Cluster)
+
+The cluster's key space is split into 16384 slots, effectively setting an upper limit for the cluster size of 16384 master nodes 
+(however, the suggested max size of nodes is on the order of ~ 1000 nodes).
+
+When the cluster is stable, a single hash slot will be served by a single node (however the serving node can have one or more replicas 
+that will replace it in the case of net splits or failures, and that can be used in order to scale read operations where reading stale 
+data is acceptable).
+
+#### Hash Tag
+
+Hash tags are a way to ensure that multiple keys are allocated in the same hash slot. 
+This is used in order to implement multi-key operations in Redis Cluster.
+
+If the key contains a `{ xxx }` pattern only the substring between `{` and `}` is hashed in order to obtain the hash slot.
+
+
+### Refenreces
+
+1. https://hackernoon.com/the-system-design-cheat-sheet-cache
+2. https://redis.io/docs/latest/operate/oss_and_stack/management/scaling/
+3. https://www.dragonflydb.io/docs/managing-dragonfly/cluster-mode#final-notes

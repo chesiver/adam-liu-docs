@@ -1,9 +1,10 @@
 {
     "chat-system": "Chat System",
     "task-queue": "Task Queue",
+    "cache": "Cache",
     "top-k": "Top K",
     "metric-monitoring": "Metric Monitoring",
     "web-crawler": "Web Crawler",
-    "social-app": "Social App (Twitter)",
-    "video-streaming": "Video streaming (Youtube)"
+    "social-app": "Social App",
+    "video-streaming": "Video Streaming"
 }
