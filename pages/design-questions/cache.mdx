@@ -38,9 +38,32 @@ This is used in order to implement multi-key operations in Redis Cluster.
 
 If the key contains a `{ xxx }` pattern only the substring between `{` and `}` is hashed in order to obtain the hash slot.
 
+### High Availability (Redis Sentinel)
+
+Redis offers asynchronous primary->secondary replication. A single server is chosen as the primary, which can accept writes.
+It relays its state changes to secondary servers, which follow along.
+
+Redis has a system called Sentinel, which, when configured correctly, will try to establish a quorum between Sentinel nodes, 
+agree on which Redis servers are alive, and promote any which appear to have failed. If we colocate the Sentinel nodes 
+with the Redis nodes, this should allow us to promote a new primary in the majority component (should one exist).
+
+##### Partition && Healing
+
+Say we have 5 nodes. Partition nodes n1 and n2 away from n3, n4, and n5.
+
+Even though n1 can't possibly be replicating its writes to n3, n4, and n5, writes against it are still completing successfully.
+N1 still thinks it's the primary, and since replication is asynchronous/
+
+When the network comes back online, Sentinel demotes the old primary when it comes back into contact with the majority component.
+
+The design of Redis Sentinel (or, for that matter, any other failover system on top of an asynchronously replicated primary-secondary design)
+means you can lose a lot of data when a partition occurs.
+
+
 
 ### Refenreces
 
 1. https://hackernoon.com/the-system-design-cheat-sheet-cache
 2. https://redis.io/docs/latest/operate/oss_and_stack/management/scaling/
 3. https://www.dragonflydb.io/docs/managing-dragonfly/cluster-mode#final-notes
+4. https://aphyr.com/posts/283-call-me-maybe-redis
