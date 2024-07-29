@@ -1,0 +1,47 @@
+
+### User Data
+
+- Init content policy platform (human intervention)
+- Get personalized parameters
+- Refresh user data providers
+
+### Recall
+
+- Given a user, from millions of items, find top 2000 - 3000 candidates
+- Retrieve from different channels (sources)
+- Weighted merge
+
+### Group Index && Inverted Index
+
+- Get groups(video items) from for-u Index
+- Get groups(video items) from follow Index
+
+### Content Strategy
+
+- Filter
+- Cold start
+- Tagging (used for keeping diversity)
+
+### Pre-rank
+
+- Cascade Sampler. Sampling on groups before pre-rank. Used for keeping consistency with rank phase.
+- Evaluate value tree to calculate scores. Get top 300 groups.
+- Diversity algorithm (centroid)
+
+### Rank
+
+- Builder user features, group features && context features
+- Row features to columnar features
+- Evaluate value tree to calculate scores. Get top 150 groups
+
+### Post-rank
+
+- Scatter groups to improve diversity
+- Heuristic ranking rules
+- DPP algorithm (Determinantal Point Process)
+- Random insert. E.g. ANSA survey
+ 
+### Mix-rank 
+
+- Merge sorted lists from live, ecom, short video 
+- Listwise scores
