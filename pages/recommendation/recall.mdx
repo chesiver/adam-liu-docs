@@ -1,0 +1,90 @@
+import Image from 'next/image'
+
+## Vector-based recall
+
+How to select 2000 - 3000 candidates from millions of items?
+
+Basic idea: Encode users && items into multi-dimentioanl embeddings, then find Top-K closest 
+neighbors to the user embedding in the multidimentional space.
+
+## Approximate Nearest Neighbor Search
+
+Trade off between accuracy and speed / space.
+
+- KDTree, Annoy
+- LSH(Locality-Sensitive Hashing)
+- PQ, OPQ, IVFOPQ
+- HNSW, NSG
+
+## NSW KNN Search
+
+### Search
+
+- limit: number of neighbors to search. Keep at most this number of elements in the result set.
+- base_node: the search target.
+- entry_points: the entry points.
+
+```
+C <- entry_points as min heap on distance
+W <- entry_points as max heap on distance
+visited <- entry_points as unordered set
+while not C.empty():
+    node <- pop C (nearest element in C)
+    if dist(node) > dist(top W): # top W is the furthest element in W
+        break
+    for neighbor in neighbors of node:
+        if not visited neighbor:
+            visited += neighbor
+            C += neighbor
+            W += neighbor
+            retain k-nearest elements in W
+return W
+```
+
+### Insertion
+
+Insertion follows the same process as layer search. We simply find the k-nearest neighbors 
+of the to-be-inserted vector in a layer, and add edges from the inserting vector to 
+the neighbors.
+
+To cut down the conections, we simply re-compute the k-nearest neighbors of nodes
+whose number of connections exceeds max_m parameter.
+
+## Hierarchical-NSW
+
+HNSW adds layered structure to the NSW index, therefore making the search process faster. 
+The idea is similar to the skiplist data structure.
+The bottom-most level 0 NSW layer contains all information, 
+and we randomly put some vectors to the upper layer (more upper layer has fewer elements), 
+which are also NSW indexes. The search process starts from the upper-most layer, and uses 
+neighbors in that layer as the entry points of the lower layer.
+
+### Search
+
+<Image src="/images/recommendation/hnsw-search.svg" width={400} height={150}/>
+
+```
+ep = upper-most level entry point
+for go down one level until last level:
+    ep <- layers[level].search(ep=ep, limit=1, search_target)
+return layers[0].search(ep=ep, limit=limit, search_target)
+```
+
+### Insertion
+
+<Image src="/images/recommendation/hnsw-insert.svg" width={400} height={150}/>
+
+Before inserting, we will need to decide which layer and below levels to insert the vector. 
+From the HNSW paper, this is computed by $$ level = -\ln{Unif([0, 1]) * m_L}$$
+
+```
+ep = upper-most level entry point
+target_level = generate random level based on m_L
+for go down one level until target_level + 1
+    ep <- layers[level].search(ep=ep, limit=1, search_target)
+for go down one level until level 0
+    ep <- layers[level].search(ep=ep, limit=ef_construction, search_target)
+    neighbors <- m-nearest neighbor in ep
+    connect neighbors with search_target
+    purge edges of neighbors if larger than m_max of that layer
+```
