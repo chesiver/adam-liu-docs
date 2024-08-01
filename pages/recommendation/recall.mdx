@@ -77,7 +77,7 @@ return layers[0].search(ep=ep, limit=limit, search_target)
 <Image src="/images/recommendation/hnsw-insert.svg" width={400} height={150}/>
 
 Before inserting, we will need to decide which layer and below levels to insert the vector. 
-From the HNSW paper, this is computed by $$ level = -\ln{Unif([0, 1]) * m_L}$$
+From the HNSW paper, this is computed by $$ level = -\ln{U([0, 1]) * m_L} $$
 
 ```
 ep = upper-most level entry point

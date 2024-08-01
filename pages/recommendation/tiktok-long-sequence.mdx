@@ -1,0 +1,69 @@
+import Image from 'next/image';
+
+## Background
+
+A user's historical behaviors / actions are important features that express their interests. 
+A short sequence is difficult to reflect user's long-term interests, which results from 
+that popular or trending occupies most or all of the sequecnce.
+
+### Features
+
+#### Short Sequence
+Video Ids on which users' recently have positive actions, including like, finish, follow, 
+share, comment.
+
+#### Long Sequence
+Users' recent finish = 1 or playtime > 5s videos Ids
+
+## Model
+
+### DIN (Deep Interest Network)
+
+https://arxiv.org/pdf/1706.06978.pdf
+
+For every item, calculate its attention (activation weight), make user action history have 
+weights when doing sumpooling. Historical items similar to target item has larger weights.
+
+### SIM
+
+https://arxiv.org/pdf/2108.04468.pdf
+
+- GSU：With hard or soft search，select Top K from sequence中(SBS, sub behaviour sequence)
+- ESU：Do target attention or other models(DIN, DIEN)，fuse multiple embeddings to user long-term interest embedding
+
+#### Target Attention
+$$ target\_attention(Q,K,V)=softmax(\frac{(QW_q)(KW_k)^T}{\sqrt{d_k}})(VW_v) $$ 
+// import 1/1
+
+- In the above formula:
+    - $$Q$$ is the query-side embedding matrix with dimensions of$$B*d_q$$, where$$B$$is the number of target gids. 
+    At TikTok, B=150 in the rank model and 2000 in the prerank model). $$d_q$$is the dimension of the query side features,
+    $$W_q$$ is the query projection matrix of dimension$$d_q*d_a$$，and$$d_a$$ is the dimension of the attention output vector.
+    - $$K$$is the sequence-side embedding vector, with dimensions$$L*d_k$$, here L is the user sequence length (currently 2500 at TikTok), 
+    $$d_k$$is the total dimension of the concatenated gids' embeddings；$$W_k$$ is key projection matrix dimention is $$d_k*d_a$$ 
+    - $$V$$ is sequence embedding matrix；$$W_v$$ is value projection matrix, dimention is $$d_k*d_a$$  
+
+#### Hard Search
+
+Based on tag embedding, kmeans to generate 256 clusters. For every recent video, allocate top 10
+cluster_id as its tag. 
+
+<Image src="/images/recommendation/hard-search-build-index.png" width={600} height={250}/>
+
+### SDIM (Sampling-based Deep Interest Modeling)
+
+https://arxiv.org/pdf/2205.10249.pdf
+
+<Image src="/images/recommendation/sdim.png" width={600} height={250}/>
+
+Model introduction: Perform LSH dimension reduction on user behavior embedding, and use the distance-reflecting feature after 
+LSH dimension reduction to achieve fast bucketing. It is assumed that the probability of hash collision is an estimate of user interest 
+(intuitively, the more collisions, the more similar the types of videos the user has watched in the past, which means 
+the user's interest is more concentrated).
+
+#### SDIM vs Attention
+
+The DIM architecture uses hash collision as an estimator of user interest and extends its own attention estimation formula 
+The article further compares the difference between SDIM's Attention and direct target attention. 
+Finally, it is found that when m = 48 and tao = 3, the difference between the two is very small, so in theory it can 
+achieve an effect similar to that of target attention.
