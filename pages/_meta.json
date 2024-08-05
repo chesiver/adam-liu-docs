@@ -7,8 +7,9 @@
   "design-questions": "Design Questions",
   "study-compiler": "Study Compiler",
   "distributed-system": "Distributed System",
-  "network-io": "Network I/O",
   "bash": "Bash",
+  "draw-io": "Draw.io",
+  "network-io": "Network I/O",
   "vercel-commands": "Vercel commands",
   "competitive-programming": "Competitive Programming",
   "about": {
