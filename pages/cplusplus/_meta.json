@@ -1,3 +1,4 @@
 {
-    "cmake": "CMake"
+    "cmake": "CMake",
+    "address-sanitizer": "Address Sanitizer"
 }

@@ -1,0 +1,75 @@
+import Image from 'next/image';
+
+### Shadow Memory
+
+Shadow memory is a dedicated memory region that stores metadata about the application's memory.
+
+Shadow memory is allocated at a high address of the program, and ASan modifies its data throughout the lifetime of the process. 
+Each byte in shadow memory describes the accessibility status of a corresponding memory chunk that can potentially be accessed by the process. 
+Those memory chunks, typically referred to as “granules,” are commonly 8 bytes in size and are aligned to their size
+(the granule size is set in GCC/LLVM code).
+
+<Image src="/images/cplusplus/shadow-memory.png" width={600} height={250}/>
+
+The shadow memory values detail whether a given granule can be fully or partially addressable (accessible by the process), 
+or whether the memory should not be touched by the process. In the latter case, we call this memory “poisoned,” and the 
+corresponding shadow memory byte value details the reason why ASan thinks so. 
+
+By updating the state of shadow memory during the process execution, ASan can verify the validity of memory accesses by 
+checking the granule's value (and so its accessibility status).
+
+Partially addressable granules are very common. One example may be a buffer on a heap of a size that is not 8-byte-aligned.
+Another may be a variable on the stack that has a size smaller than 8 bytes.
+
+### Redzones
+
+Redzones are memory regions inserted into the process memory (and so reflected in shadow memory) that act as buffer zones, 
+separating different objects in memory with poisoned memory. As a result, compiling a program with ASan changes its memory layout.
+
+[Example](https://godbolt.org/#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:c%2B%2B,selection:(endColumn:2,endLineNumber:7,positionColumn:2,positionLineNumber:7,selectionStartColumn:2,selectionStartLineNumber:7,startColumn:2,startLineNumber:7),source:'int+main()+%7B%0A++++volatile+short+buf%5B6%5D,+a%3D0%3B%0A++++volatile+char+b%3D1%3B%0A++++//+trigger+out-of-bounds+so+ASan+shows%0A++++//+shadow+bytes+around+the+buggy+access%0A++++buf%5B10%5D+%3D+a%2Bb%3B%0A%7D'),l:'5',n:'1',o:'C%2B%2B+source+%231',t:'0')),k:33.333333333333336,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:g122,filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',debugCalls:'1',demangle:'0',directives:'0',execute:'0',intel:'0',libraryCode:'0',trim:'1',verboseDemangling:'0'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:c%2B%2B,libs:!(),options:'-std%3Dc%2B%2B20+-O0+-fsanitize%3Daddress+-g3',overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+x86-64+gcc+12.2+(Editor+%231)',t:'0')),k:33.333333333333336,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:output,i:(compilerName:'x86-64+gcc+12.2',editorid:1,fontScale:14,fontUsePx:'0',j:1,wrap:'1'),l:'5',n:'0',o:'Output+of+x86-64+gcc+12.2+(Compiler+%231)',t:'0')),k:33.33333333333333,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4)
+
+```cpp
+int main() {
+    volatile short buf[6], a=0;
+    volatile char b=1;
+    // trigger out-of-bounds so ASan shows
+    // shadow bytes around the buggy access
+    buf[10] = a+b;
+}
+```
+
+<Image src="/images/cplusplus/redzone.png" width={600} height={250}/>
+
+Without ASan, the “a,” “b,” and “buf” variables would likely be next to each other, without any padding between them. 
+
+**The padding was added by the fact that the variables must be partially addressable**.
+
+Redzones are not added between elements in arrays or in between member variables in structures. This is due to the fact that it would simply 
+break many applications that depend upon the structure layout, their sizes, or simply on the fact that arrays are contiguous in memory.
+
+### Limitations
+
+Because ASan does not understand what programs are intended to do, accessing an array with an incorrect index may not be detected 
+if the resulting address is still addressable.
+
+[Example](https://godbolt.org/#g:!((g:!((g:!((h:codeEditor,i:(filename:'1',fontScale:14,fontUsePx:'0',j:1,lang:c%2B%2B,selection:(endColumn:20,endLineNumber:1,positionColumn:20,positionLineNumber:1,selectionStartColumn:20,selectionStartLineNumber:1,startColumn:20,startLineNumber:1),source:'%23include+%3Ciostream%3E%0A%0Aint+main()+%7B%0A++++int+A%5B3%5D+%7B1,+2,+3%7D,+B%5B3%5D+%3D+%7B11,+22,+33%7D%3B%0A++++int+diff+%3D+B-A%3B%0A++++std::cout+%3C%3C+A%5Bdiff+%2B+1%5D+%3C%3C+std::endl%3B%0A%7D'),l:'5',n:'0',o:'C%2B%2B+source+%231',t:'0')),k:33.333333333333336,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:compiler,i:(compiler:clang1500,deviceViewOpen:'1',filters:(b:'0',binary:'1',binaryObject:'1',commentOnly:'0',demangle:'0',directives:'0',execute:'0',intel:'0',libraryCode:'0',trim:'1'),flagsViewOpen:'1',fontScale:14,fontUsePx:'0',j:1,lang:c%2B%2B,libs:!(),options:'-std%3Dc%2B%2B20+-O3+-stdlib%3Dlibc%2B%2B+-fsanitize%3Daddress',selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:'5',n:'0',o:'+x86-64+clang+15.0.0+(Editor+%231)',t:'0')),k:33.333333333333336,l:'4',n:'0',o:'',s:0,t:'0'),(g:!((h:output,i:(compilerName:'x86-64+clang+16.0.0',editorid:1,fontScale:14,fontUsePx:'0',j:1,wrap:'1'),l:'5',n:'0',o:'Output+of+x86-64+clang+15.0.0+(Compiler+%231)',t:'0')),k:33.33333333333333,l:'4',n:'0',o:'',s:0,t:'0')),l:'2',n:'0',o:'',t:'0')),version:4)
+
+```cpp
+int main() {
+    int A[3] {1, 2, 3}, B[3] = {11, 22, 33}; // Creates two arrays on stack, A and B
+    // values in A are: 1, 2, 3
+    // values in B are: 11, 12, 13
+
+    int diff = B-A; // calculate distance between pointers addresses of B and A
+    // it is calculated as a distance between int pointers
+
+    std::cout << A << std::endl;
+    // Prints A
+    // diff + 1 may be a negative number or a big number,
+    //   but it’s outside of memory area of A
+    // However, it’s same as *(A + diff + 1), which equals B[1].
+}
+```
+## References
+
+1. https://blog.trailofbits.com/2024/05/16/understanding-addresssanitizer-better-memory-safety-for-your-code/
