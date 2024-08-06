@@ -6,5 +6,6 @@
     "metric-monitoring": "Metric Monitoring",
     "web-crawler": "Web Crawler",
     "social-app": "Social App",
-    "video-streaming": "Video Streaming"
+    "video-streaming": "Video Streaming",
+    "rate-limiter": "Rate Limiter"
 }
