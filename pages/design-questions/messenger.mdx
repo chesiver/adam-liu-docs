@@ -25,4 +25,7 @@ import Image from 'next/image'
 - Keep a specific user hitting a specific instance
 - May lead to uneven distribution
 
+### Message Ordering
 
+- Message-stored ordering might be different from message-sent order
+- Use FIFO queue to enforce order if needed
