@@ -1,0 +1,24 @@
+import Image from 'next/image'
+
+<Image src="/system-design/ticket-booking.png" style={{backgroundColor: "white"}} width={1200} height={800} />
+
+### Event Service
+
+- Caching or CDN since events are rarely modified
+- Setup database trigger to notify cache about event changes
+
+### Booking Service
+
+- Update ticket with reserved status and set expiration time to avoid long-time holding
+- May cause read slower because need to filter tickets by its status
+- Use Redis as a distributed lock for lower latency
+
+### Virtual Waiting Queue
+
+- For extremely popular events, place users in a waiting queue before booking
+- Server-sent events to notify users when they are able to book
+
+### Search Service
+
+- Full-text index in the DB. Lightweight.
+- Change data capture && ElasticSearch
