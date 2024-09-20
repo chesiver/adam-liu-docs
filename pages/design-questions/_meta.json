@@ -1,6 +1,7 @@
 {
     "messenger": "Messenger",
     "ticket-booking": "Ticket Booking",
+    "news-feed": "News Feed",
     "task-queue": "Task Queue",
     "cache": "Cache",
     "top-k": "Top K",

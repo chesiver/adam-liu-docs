@@ -1,0 +1,15 @@
+import Image from 'next/image'
+
+<Image src="/system-design/news-feed.png" style={{backgroundColor: "white"}} width={1200} height={800} />
+
+### Feed Service
+
+- Add a precomputed feed table 
+- If a user is following a large number of users, need large number of queries to the Post table to build feed
+- If a user has a large number of followers, pre-calculation is very expensive
+- Hybrid approach. Choose between fanout-read or fanout-write
+
+### Post Service 
+
+- Possible uneven reads to some popular posts
+- User replicated post cache. Assume posts are rarely modified.
