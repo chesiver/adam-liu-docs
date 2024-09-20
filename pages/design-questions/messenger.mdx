@@ -1,0 +1,28 @@
+import Image from 'next/image'
+
+<Image src="/system-design/messenger.png" style={{backgroundColor: "white"}} width={1200} height={800} />
+
+### Message Storage
+
+- Sharding on chat id (channel id)
+- Status Received needs acknowledge from client
+- TTL for cleaning
+- Read / Write ratio 1:1
+
+### Routing Storage
+
+- Maintain mapping from receiver user id to realtime messenging instace id 
+- Must be syncronized with realtime messenging cluster
+
+### Realtime Messaging Service
+
+- Maintain mapping from receiver user id to socket connection
+- IO multiplexing - C++ libevent / Java Netty - Reuse TCP connections
+- Server-sent event
+
+### Sticky Sessions
+
+- Keep a specific user hitting a specific instance
+- May lead to uneven distribution
+
+
