@@ -2,11 +2,11 @@
     "messenger": "Messenger",
     "ticket-booking": "Ticket Booking",
     "news-feed": "News Feed",
+    "web-crawler": "Web Crawler",
     "task-queue": "Task Queue",
     "cache": "Cache",
     "top-k": "Top K",
     "metric-monitoring": "Metric Monitoring",
-    "web-crawler": "Web Crawler",
     "social-app": "Social App",
     "video-streaming": "Video Streaming",
     "rate-limiter": "Rate Limiter"

@@ -1,4 +1,31 @@
-### Use Case
+import Image from 'next/image'
+
+<Image src="/system-design/web-crawler.png" style={{backgroundColor: "white"}} width={1200} height={800} />
+
+### URL Fetcher
+
+- SQS supports retries with configurable exponential backoff out of the box
+- After a certain number of failures, as determined by the ApproximateReceiveCount, the message is moved to a dead-letter queue (DLQ)
+- Respect Robots.txt
+
+### Too-Large File
+- User HEAD request to get Content-Length before real fetching
+
+### DNS Caching
+
+- Cache DNS lookups in our crawlers to reduce the number of DNS requests.
+
+### URL Metadata
+
+- Store a link for parsers to download the fetched raw content
+- Store a content hash for raw contents. Create a index for fast lookup. 
+- Store a depth for the crawled URL. Avoid infinite loop
+
+### Dynamic Content
+- Use a headless browser like Puppeteer to render the page and extract the content.
+
+
+{/* ### Use Case
 
 - Service crawls a list of urls. Generates reverse index of words to pages containing the search terms.
 - User inputs a search term and sees a list of relevant pages with titles and snippets the crawler generated.
@@ -43,4 +70,4 @@ when the request can be made.
 1. https://leetcode.com/discuss/interview-question/system-design/2950256/High-Level-Design-of-a-Web-Crawler
 2. https://github.com/donnemartin/system-design-primer/blob/master/solutions/system_design/web_crawler/README.md
 3. https://www.youtube.com/watch?v=OmyHt0JM7HM
-4. https://www.youtube.com/watch?v=MdWvMX4J-Vc
+4. https://www.youtube.com/watch?v=MdWvMX4J-Vc */}
