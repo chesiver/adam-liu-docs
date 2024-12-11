@@ -1,4 +1,15 @@
-## A simple template
+### Template Project for CMake && vcpkg
+
+https://github.com/chesiver/vcpkg-cmake-template
+
+Pin this at the top as combining CMake, vcpkg and VSCode CMake plugin really works great. 
+
+Some people like not to use any package manager, but when importing very large library (Boost / Folly) with 
+many 3rd-party libXXX dependencies, configuring the build env && process is tedious.
+
+Just let a package manager deal with that.
+
+### Raw CMake Template
 
 ```cmake
 cmake_minimum_required(VERSION 3.14)

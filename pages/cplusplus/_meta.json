@@ -1,4 +1,5 @@
 {
     "cmake": "CMake",
+    "concurrency": "Concurrency",
     "address-sanitizer": "Address Sanitizer"
 }

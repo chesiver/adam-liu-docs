@@ -1,0 +1,27 @@
+import Image from 'next/image';
+
+## Standard Library
+
+### promise && future
+
+https://stackoverflow.com/questions/12620186/futures-vs-promises
+
+<Image src="/images/cplusplus/future-promise.jpg" width={400} height={250}/>
+
+### packaged_task && async
+
+- std::packaged_task `<=>` std::promise + std::function
+- std::async `<=>` std::thread + std::packaged_task
+
+std::async forces the creation of a new thread instead of using one from a pool, so it might come with 
+much overhead. 
+
+https://stackoverflow.com/questions/14351352/does-asynclaunchasync-in-c11-make-thread-pools-obsolete-for-avoiding-expen
+
+### thread-pool library
+
+https://github.com/DeveloperPaul123/thread-pool
+
+https://github.com/alugowski/task-thread-pool
+
+https://github.com/bshoshany/thread-pool
