@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint --fix --ext .ts,.tsx ."
+    "lint": "eslint --fix --ext .ts,.tsx .",
+    "deploy": "vercel deploy --env VERCEL_FORCE_NO_BUILD_CACH=1 --force"
   },
   "repository": {
     "type": "git",

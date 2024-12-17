@@ -18,7 +18,110 @@ much overhead.
 
 https://stackoverflow.com/questions/14351352/does-asynclaunchasync-in-c11-make-thread-pools-obsolete-for-avoiding-expen
 
-### thread-pool library
+## A Simple Thread Pool
+
+A very simple c++20 implementation of thread pool: https://github.com/chesiver/cpp-concurrency-playground/blob/main/Future/simple_thread_pool/simple_thread_pool.h
+
+```cpp
+class thread_pool {
+   public:
+    explicit thread_pool(size_t);
+    template <typename F, typename... Args,
+              typename ReturnType = std::invoke_result_t<F &&, Args &&...>>
+    auto enqueue(F &&f, Args &&...args) -> std::future<ReturnType>;
+    auto wait_for_all() -> void;
+    ~thread_pool();
+
+   private:
+    // need to keep track of threads so we can join them
+    std::vector<std::jthread> _workers;
+    // the task queue
+    std::queue<std::function<void()>> _tasks;
+    // synchronization
+    std::mutex _queue_mutex;
+    std::condition_variable_any _condition;
+    // for waiting for all tasks
+    std::atomic<int> _running_tasks_num{0};
+    std::atomic<bool> _task_completed{false};
+};
+```
+
+- Use std::atomic here to avoid usage of a second conditional variable
+- Use jthread here so threads automatially join at the time of destruction
+
+```cpp
+// the constructor just launches some amount of _workers
+thread_pool::thread_pool(size_t threads) {
+    for (size_t i = 0; i < threads; i += 1)
+        _workers.emplace_back([this](std::stop_token stop_token) {
+            while (true) {
+                std::function<void()> task;
+                {
+                    std::unique_lock<std::mutex> lock(_queue_mutex);
+                    _condition.wait(lock, stop_token,
+                                    [this] { return !_tasks.empty(); });
+                    if (stop_token.stop_requested()) {
+                        break;
+                    }
+                    task = std::move(_tasks.front());
+                    _tasks.pop();
+                }
+                int prev_running_tasks_num = _running_tasks_num.fetch_add(1);
+                if (prev_running_tasks_num == 0) {
+                    _task_completed.store(false);
+                }
+                std::invoke(task);
+                _running_tasks_num.fetch_sub(1);
+                if (_running_tasks_num.load() == 0) {
+                    _task_completed.store(true);
+                    _task_completed.notify_one();
+                }
+            }
+        });
+}
+```
+
+- Compare to std::condition_variable, std::condition_variable_any can take a std::stop_token(which serves as a channel to get stop notification from
+    std::jthread). No need to manually maintain a stop boolean flag and relavant mutex
+- Same as std::condition_variable, std::atomic value change needs to be notified to other threads by invoking notify_one()
+
+```cpp
+// add new work item to the pool
+template <typename F, typename... Args,
+          typename ReturnType = std::invoke_result_t<F &&, Args &&...>>
+auto thread_pool::enqueue(F &&f, Args &&...args) -> std::future<ReturnType> {
+    auto task = std::make_shared<std::packaged_task<ReturnType()>>(
+        std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+    std::future<ReturnType> res = task->get_future();
+    {
+        std::unique_lock<std::mutex> lock(_queue_mutex);
+        _tasks.emplace([task]() { std::invoke(*task); });
+    }
+    _condition.notify_one();
+    return res;
+}
+```
+
+
+
+```cpp
+auto thread_pool::wait_for_all() -> void {
+    if (_running_tasks_num.load() > 0) {
+        _task_completed.wait(false);
+    }
+}
+
+thread_pool::~thread_pool() {
+    wait_for_all();
+    for (auto &worker : _workers) {
+        worker.request_stop();
+    }
+}
+```
+
+
+
+## Thread Pool Library
 
 https://github.com/DeveloperPaul123/thread-pool
 
